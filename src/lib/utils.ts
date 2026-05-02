@@ -14,20 +14,26 @@ export function formatRupiah(angka: number): string {
   }).format(angka);
 }
 
-export function formatTanggal(date: string | Date): string {
+export function formatTanggal(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
   return new Intl.DateTimeFormat("id-ID", {
     day: "numeric",
     month: "long",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(d);
 }
 
-export function formatTanggalPendek(date: string | Date): string {
+export function formatTanggalPendek(date: string | Date | null | undefined): string {
+  if (!date) return "-";
+  const d = new Date(date);
+  if (isNaN(d.getTime())) return "-";
   return new Intl.DateTimeFormat("id-ID", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(new Date(date));
+  }).format(d);
 }
 
 export function generateKodeTransaksi(): string {

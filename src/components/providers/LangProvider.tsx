@@ -16,7 +16,7 @@ export const translations = {
     /* dashboard page */
     greetTitle: "Selamat datang, Admin",
     greetSub: "Ringkasan Bank Sampah Desa Kebonagung hari ini.",
-    btnCatat: "+ Catat Setoran",
+    btnCatat: " Catat Setoran",
     kpi1Label: "Total Tabungan Warga", kpi1Sub: "Wajib disiapkan saat lebaran",
     kpi2Label: "Kas Operasional", kpi2Sub: "Terkumpul dari potongan 10%",
     kpi3Label: "Total Sampah Masuk", kpi3Sub: "Semua kategori terverifikasi",
@@ -33,7 +33,7 @@ export const translations = {
     emptyPie: "Belum ada data",
     emptyAcc: "Belum ada akumulasi tabungan.",
     txnTitle: "Setoran Terbaru",
-    txnSeeAll: "Lihat semua →",
+    txnSeeAll: "Lihat semua",
     txnEmpty: "Belum ada transaksi.",
     txnEmptyBtn: "+ Catat Setoran Pertama",
     txnColNasabah: "Nasabah", txnColJenis: "Jenis Sampah",

@@ -2,14 +2,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/components/providers/LangProvider";
+import {
+  LayoutDashboard, Users, Recycle,
+  Tag, Banknote, BarChart2, Lightbulb,
+} from "lucide-react";
 
 const navItems = [
-  { href: "/",          labelKey: "dashboard" as const,  icon: "⊞" },
-  { href: "/nasabah",   labelKey: "nasabah" as const,    icon: "👥" },
-  { href: "/transaksi", labelKey: "setoran" as const,    icon: "♻️" },
-  { href: "/harga",     labelKey: "harga" as const,      icon: "🏷️" },
-  { href: "/penarikan", labelKey: "penarikan" as const,  icon: "💵" },
-  { href: "/laporan",   labelKey: "laporan" as const,    icon: "📊" },
+  { href: "/",          labelKey: "dashboard" as const, Icon: LayoutDashboard },
+  { href: "/nasabah",   labelKey: "nasabah"   as const, Icon: Users           },
+  { href: "/transaksi", labelKey: "setoran"   as const, Icon: Recycle         },
+  { href: "/harga",     labelKey: "harga"     as const, Icon: Tag             },
+  { href: "/penarikan", labelKey: "penarikan" as const, Icon: Banknote        },
+  { href: "/laporan",   labelKey: "laporan"   as const, Icon: BarChart2       },
 ];
 
 export default function Sidebar() {
@@ -18,55 +22,59 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: "220px", flexShrink: 0,
-      background: "var(--surf)", borderRight: "1px solid var(--bdr)",
+      width: "224px", flexShrink: 0,
+      background: "var(--surf)",
+      borderRight: "1px solid var(--bdr)",
       height: "100vh", display: "flex", flexDirection: "column",
-      transition: "background 0.3s",
+      transition: "background 0.25s",
     }}>
       {/* Logo */}
-      <div style={{ padding: "20px 18px", borderBottom: "1px solid var(--bdr)" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <div style={{
-            width: "38px", height: "38px", borderRadius: "12px",
-            background: "var(--p)", display: "flex", alignItems: "center",
-            justifyContent: "center", fontSize: "20px", flexShrink: 0,
-          }}>♻</div>
-          <div>
-            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>
-              Bank Sampah
-            </p>
-            <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "2px" }}>
-              Desa Kebonagung
-            </p>
-          </div>
+      <div style={{
+        padding: "20px 18px 18px",
+        borderBottom: "1px solid var(--bdr)",
+        display: "flex", alignItems: "center", gap: "10px",
+      }}>
+        <div style={{
+          width: "36px", height: "36px", borderRadius: "10px",
+          background: "var(--p)", display: "flex",
+          alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}>
+          <Recycle size={18} color="#fff" strokeWidth={2.5} />
+        </div>
+        <div>
+          <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.2px" }}>
+            Bank Sampah
+          </p>
+          <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "1px" }}>
+            Desa Kebonagung
+          </p>
         </div>
       </div>
 
       {/* Nav */}
-      <nav style={{ flex: 1, padding: "12px 10px", overflowY: "auto" }}>
+      <nav style={{ flex: 1, padding: "10px 10px", overflowY: "auto" }}>
         <p style={{
           fontSize: "10px", fontWeight: 600, color: "var(--text3)",
           textTransform: "uppercase", letterSpacing: "0.8px",
-          padding: "0 8px", marginBottom: "8px",
+          padding: "8px 8px 6px", marginBottom: "2px",
         }}>Menu Utama</p>
 
-        {navItems.map((item) => {
-          const isActive = item.href === "/"
-            ? pathname === "/" : pathname.startsWith(item.href);
+        {navItems.map(({ href, labelKey, Icon }) => {
+          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
-            <Link key={item.href} href={item.href} style={{
-              display: "flex", alignItems: "center", gap: "10px",
-              padding: "9px 10px", borderRadius: "10px", marginBottom: "2px",
-              fontSize: "13px", fontWeight: isActive ? 600 : 400,
-              color: isActive ? "var(--p)" : "var(--text2)",
+            <Link key={href} href={href} style={{
+              display: "flex", alignItems: "center", gap: "9px",
+              padding: "8px 10px", borderRadius: "8px", marginBottom: "1px",
+              fontSize: "13px", fontWeight: isActive ? 600 : 500,
+              color: isActive ? "var(--p)" : "var(--text3)",
               background: isActive ? "var(--p5)" : "transparent",
-              textDecoration: "none", transition: "all 0.2s",
+              textDecoration: "none", transition: "all 0.15s",
             }}>
-              <span style={{ fontSize: "16px" }}>{item.icon}</span>
-              {t[item.labelKey]}
+              <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+              {t[labelKey]}
               {isActive && (
-                <span style={{
-                  marginLeft: "auto", width: "6px", height: "6px",
+                <div style={{
+                  marginLeft: "auto", width: "5px", height: "5px",
                   borderRadius: "50%", background: "var(--p)",
                 }} />
               )}
@@ -75,13 +83,17 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Tip box */}
+      {/* Tip */}
       <div style={{ padding: "12px", borderTop: "1px solid var(--bdr)" }}>
-        <div style={{ background: "var(--p5)", borderRadius: "10px", padding: "10px 12px" }}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--p)" }}>
-            💡 {t.panduan}
-          </p>
-          <p style={{ fontSize: "11px", color: "var(--text2)", marginTop: "4px", lineHeight: 1.5 }}>
+        <div style={{
+          background: "var(--p6)", borderRadius: "8px",
+          padding: "10px 12px", border: "1px solid var(--bdr)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
+            <Lightbulb size={13} color="var(--p)" strokeWidth={2.5} />
+            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--p)" }}>{t.panduan}</p>
+          </div>
+          <p style={{ fontSize: "11px", color: "var(--text3)", lineHeight: 1.5 }}>
             {t.panduanText}
           </p>
         </div>

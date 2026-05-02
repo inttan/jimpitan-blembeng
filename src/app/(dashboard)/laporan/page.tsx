@@ -1,166 +1,219 @@
-// src/app/(dashboard)/laporan/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatTanggal } from "@/lib/utils";
+import { Landmark, Recycle, Briefcase } from "lucide-react";
+import ButtonDownloadLaporan from "@/components/forms/ButtonDownloadLaporan";
+import RiwayatSetoranTable from "@/components/laporan/RiwayatSetoranTable";
 
 async function getLaporanData() {
   const supabase = await createClient();
-  const [saldoRes, transaksiRes, kasRes, penarikanRes] = await Promise.all([
-    supabase.from("v_saldo_nasabah").select("*").eq("status", "aktif").order("saldo_aktif", { ascending: false }),
-    supabase.from("transaksi_setoran")
-      .select(`kode_transaksi, berat_kg, nilai_kotor, potongan_kas, nilai_bersih, tanggal_setor,
-        nasabah:nasabah_id (nama_lengkap), sampah:sampah_id (nama_sampah, kategori)`)
-      .eq("status", "terverifikasi")
-      .order("tanggal_setor", { ascending: false })
+  const [saldoRes, setoranRes, kasRes, penarikanRes] = await Promise.all([
+    supabase
+      .from("v_saldo_nasabah")
+      .select("*")
+      .eq("status", "aktif")
+      .order("saldo_aktif", { ascending: false }),
+
+    // ← pakai v_riwayat_setoran, bukan transaksi_setoran
+    supabase
+      .from("v_riwayat_setoran")
+      .select("*")
+      .order("created_at", { ascending: false })
       .limit(50),
-    supabase.from("kas_operasional").select("jumlah, tanggal").order("tanggal", { ascending: false }),
-    supabase.from("transaksi_penarikan_tunai").select("*, nasabah:nasabah_id (nama_lengkap)").order("created_at", { ascending: false }),
+
+    supabase
+      .from("kas_operasional")
+      .select("jumlah, tanggal")
+      .order("tanggal", { ascending: false }),
+
+    supabase
+      .from("transaksi_penarikan_tunai")
+      .select("*, nasabah:nasabah_id (nama_lengkap)")
+      .order("created_at", { ascending: false }),
   ]);
 
   const totalKas = (kasRes.data ?? []).reduce((s, k) => s + k.jumlah, 0);
+
   return {
-    saldoList: saldoRes.data ?? [],
-    transaksiList: transaksiRes.data ?? [],
+    saldoList:    saldoRes.data ?? [],
+    setoranList:  setoranRes.data ?? [],
     totalKas,
     penarikanList: penarikanRes.data ?? [],
   };
 }
 
+const card = {
+  background: "var(--surf)", border: "1px solid var(--bdr)",
+  borderRadius: "var(--r)", boxShadow: "var(--shd)",
+};
+
+function SectionCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
+  return (
+    <div style={card}>
+      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--bdr)" }}>
+        <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>{title}</p>
+        {sub && <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "2px" }}>{sub}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
 export default async function LaporanPage() {
-  const { saldoList, transaksiList, totalKas, penarikanList } = await getLaporanData();
+  const { saldoList, setoranList, totalKas, penarikanList } = await getLaporanData();
 
   const totalTabungan = saldoList.reduce((s, n) => s + (n.saldo_aktif ?? 0), 0);
-  const totalSetoran = transaksiList.reduce((s, t) => s + (t.nilai_bersih ?? 0), 0);
+  // Total bersih dari setoran header (sudah aggregate)
+  const totalSetoran  = setoranList.reduce((s, t) => s + (t.total_nilai_bersih ?? 0), 0);
+
+  const summaryStats = [
+    { label: "Total Tabungan Warga",  value: formatRupiah(totalTabungan), Icon: Landmark,  color: "var(--acc)" },
+    { label: "Total Setoran Bersih",  value: formatRupiah(totalSetoran),  Icon: Recycle,   color: "var(--p)"   },
+    { label: "Total Kas Terkumpul",   value: formatRupiah(totalKas),      Icon: Briefcase, color: "#3b82f6"    },
+  ];
 
   return (
-    <div className="space-y-6 p-6">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Laporan</h1>
-        <p className="text-sm text-gray-500">Ringkasan keuangan dan transaksi bank sampah</p>
+    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+        <div>
+          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.4px" }}>
+            Laporan
+          </h1>
+          <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px" }}>
+            Ringkasan keuangan dan transaksi bank sampah
+          </p>
+        </div>
+        <ButtonDownloadLaporan />
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: "Total Tabungan Warga", value: formatRupiah(totalTabungan), icon: "🏦", color: "text-amber-700" },
-          { label: "Total Setoran Bersih", value: formatRupiah(totalSetoran), icon: "♻️", color: "text-emerald-700" },
-          { label: "Total Kas Terkumpul", value: formatRupiah(totalKas), icon: "💼", color: "text-blue-700" },
-        ].map((s) => (
-          <div key={s.label} className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xl">{s.icon}</span>
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">{s.label}</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
+        {summaryStats.map(({ label, value, Icon, color }) => (
+          <div key={label} style={{ ...card, padding: "18px 20px" }}>
+            <div style={{
+              width: "32px", height: "32px", borderRadius: "9px",
+              background: "var(--p5)", display: "flex",
+              alignItems: "center", justifyContent: "center",
+              color, marginBottom: "12px",
+            }}>
+              <Icon size={16} strokeWidth={2.5} />
             </div>
-            <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)", marginBottom: "5px" }}>
+              {label}
+            </p>
+            <p style={{ fontSize: "22px", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.5px" }}>
+              {value}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Saldo per Nasabah */}
-      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-50 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-800">Saldo Tabungan per Nasabah</p>
-          <p className="text-xs text-gray-400">Diurutkan dari saldo terbesar · Data real-time dari database</p>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-50 text-xs uppercase tracking-wider text-gray-400">
-            <tr>
-              <th className="px-5 py-3 text-left">Kode</th>
-              <th className="px-5 py-3 text-left">Nama Nasabah</th>
-              <th className="px-5 py-3 text-right">Total Setoran</th>
-              <th className="px-5 py-3 text-right">Total Dicairkan</th>
-              <th className="px-5 py-3 text-right">Saldo Aktif</th>
-              <th className="px-5 py-3 text-right">Jml Transaksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {saldoList.map((n, i) => (
-              <tr key={n.id} className={`border-b border-gray-50 hover:bg-gray-50 ${i === saldoList.length - 1 ? "border-0" : ""}`}>
-                <td className="px-5 py-3 font-mono text-xs text-gray-400">{n.kode_nasabah}</td>
-                <td className="px-5 py-3 font-medium text-gray-800">{n.nama_lengkap}</td>
-                <td className="px-5 py-3 text-right text-gray-600">{formatRupiah(n.total_setoran_bersih ?? 0)}</td>
-                <td className="px-5 py-3 text-right text-red-500">{formatRupiah(n.total_dicairkan ?? 0)}</td>
-                <td className="px-5 py-3 text-right font-bold text-emerald-700">{formatRupiah(n.saldo_aktif ?? 0)}</td>
-                <td className="px-5 py-3 text-right text-gray-400">{n.total_transaksi} kali</td>
-              </tr>
-            ))}
-            <tr className="bg-gray-50 font-semibold">
-              <td colSpan={4} className="px-5 py-3 text-right text-gray-700">Total Liabilities (wajib disiapkan)</td>
-              <td className="px-5 py-3 text-right text-amber-700">{formatRupiah(totalTabungan)}</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Riwayat Transaksi */}
-      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-50 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-800">Riwayat Transaksi Setoran</p>
-          <p className="text-xs text-gray-400">50 transaksi terbaru</p>
-        </div>
-        <table className="w-full text-sm">
-          <thead className="border-b border-gray-50 text-xs uppercase tracking-wider text-gray-400">
-            <tr>
-              <th className="px-5 py-3 text-left">Kode</th>
-              <th className="px-5 py-3 text-left">Nasabah</th>
-              <th className="px-5 py-3 text-left">Sampah</th>
-              <th className="px-5 py-3 text-right">Berat</th>
-              <th className="px-5 py-3 text-right">Kotor</th>
-              <th className="px-5 py-3 text-right">Kas 10%</th>
-              <th className="px-5 py-3 text-right">Bersih</th>
-              <th className="px-5 py-3 text-right">Tanggal</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transaksiList.map((t: any, i: number) => (
-              <tr key={t.kode_transaksi} className={`border-b border-gray-50 hover:bg-gray-50 ${i === transaksiList.length - 1 ? "border-0" : ""}`}>
-                <td className="px-5 py-3 font-mono text-xs text-gray-400">{t.kode_transaksi}</td>
-                <td className="px-5 py-3 font-medium text-gray-800">{t.nasabah?.nama_lengkap ?? "—"}</td>
-                <td className="px-5 py-3">
-                  <span className="rounded-lg bg-emerald-50 px-2 py-0.5 text-xs text-emerald-700">{t.sampah?.nama_sampah ?? "—"}</span>
-                </td>
-                <td className="px-5 py-3 text-right text-gray-600">{t.berat_kg} kg</td>
-                <td className="px-5 py-3 text-right text-gray-500">{formatRupiah(t.nilai_kotor)}</td>
-                <td className="px-5 py-3 text-right text-red-400 text-xs">{formatRupiah(t.potongan_kas)}</td>
-                <td className="px-5 py-3 text-right font-semibold text-emerald-700">{formatRupiah(t.nilai_bersih)}</td>
-                <td className="px-5 py-3 text-right text-xs text-gray-400">{formatTanggal(t.tanggal_setor)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Riwayat Penarikan */}
-      {penarikanList.length > 0 && (
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-50 px-5 py-4">
-            <p className="text-sm font-semibold text-gray-800">Riwayat Pencairan Lebaran</p>
-          </div>
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-50 text-xs uppercase tracking-wider text-gray-400">
-              <tr>
-                <th className="px-5 py-3 text-left">Kode</th>
-                <th className="px-5 py-3 text-left">Nasabah</th>
-                <th className="px-5 py-3 text-right">Jumlah Dicairkan</th>
-                <th className="px-5 py-3 text-left">Periode</th>
-                <th className="px-5 py-3 text-left">Admin Saksi</th>
-                <th className="px-5 py-3 text-right">Tanggal</th>
+      <SectionCard
+        title="Saldo Tabungan per Nasabah"
+        sub="Diurutkan dari saldo terbesar · Data real-time dari database"
+      >
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+            <thead>
+              <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
+                {["Kode", "Nama Nasabah", "Total Setoran", "Total Dicairkan", "Saldo Aktif", "Jml Setoran"].map((h, i) => (
+                  <th key={h} style={{
+                    padding: "10px 16px", textAlign: i >= 2 ? "right" : "left",
+                    fontSize: "10px", fontWeight: 600,
+                    textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)",
+                  }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {penarikanList.map((p: any, i: number) => (
-                <tr key={p.id} className={`border-b border-gray-50 hover:bg-gray-50 ${i === penarikanList.length - 1 ? "border-0" : ""}`}>
-                  <td className="px-5 py-3 font-mono text-xs text-gray-400">{p.kode_penarikan}</td>
-                  <td className="px-5 py-3 font-medium text-gray-800">{p.nasabah?.nama_lengkap ?? "—"}</td>
-                  <td className="px-5 py-3 text-right font-bold text-amber-700">{formatRupiah(p.jumlah_diterima)}</td>
-                  <td className="px-5 py-3 text-gray-600">{p.periode_lebaran}</td>
-                  <td className="px-5 py-3 text-gray-500">{p.admin_saksi}</td>
-                  <td className="px-5 py-3 text-right text-xs text-gray-400">{formatTanggal(p.tanggal_pencairan)}</td>
+              {saldoList.map((n, i) => (
+                <tr key={n.id} style={{ borderBottom: i < saldoList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
+                  <td style={{ padding: "12px 16px" }}>
+                    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--text3)" }}>
+                      {n.kode_nasabah}
+                    </span>
+                  </td>
+                  <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text)" }}>
+                    {n.nama_lengkap}
+                  </td>
+                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text2)" }}>
+                    {/* ← nama kolom yang benar dari v_saldo_nasabah baru */}
+                    {formatRupiah(n.total_setoran ?? 0)}
+                  </td>
+                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--red)" }}>
+                    {formatRupiah(n.total_dicairkan ?? 0)}
+                  </td>
+                  <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "var(--p)" }}>
+                    {formatRupiah(n.saldo_aktif ?? 0)}
+                  </td>
+                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text3)" }}>
+                    {/* ← nama kolom yang benar */}
+                    {n.jumlah_transaksi}x
+                  </td>
                 </tr>
               ))}
+              <tr style={{ background: "var(--acc2)" }}>
+                <td colSpan={4} style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "var(--text2)", fontSize: "12px" }}>
+                  Total Liabilities (wajib disiapkan)
+                </td>
+                <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 800, color: "var(--acc)" }}>
+                  {formatRupiah(totalTabungan)}
+                </td>
+                <td />
+              </tr>
             </tbody>
           </table>
         </div>
+      </SectionCard>
+
+      {/* Riwayat Setoran — client component karena ada expand/collapse */}
+      <SectionCard title="Riwayat Setoran" sub="50 setoran terbaru">
+        <RiwayatSetoranTable setoranList={setoranList} />
+      </SectionCard>
+
+      {/* Riwayat Penarikan */}
+      {penarikanList.length > 0 && (
+        <SectionCard title="Riwayat Pencairan Lebaran">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
+                  {["Kode", "Nasabah", "Jumlah Dicairkan", "Periode", "Admin Saksi", "Tanggal"].map((h, i) => (
+                    <th key={h} style={{
+                      padding: "10px 16px", textAlign: i === 2 || i === 5 ? "right" : "left",
+                      fontSize: "10px", fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)",
+                    }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {penarikanList.map((p: any, i: number) => (
+                  <tr key={p.id} style={{ borderBottom: i < penarikanList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
+                    <td style={{ padding: "11px 16px" }}>
+                      <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--text3)" }}>
+                        {p.kode_penarikan}
+                      </span>
+                    </td>
+                    <td style={{ padding: "11px 16px", fontWeight: 600, color: "var(--text)" }}>
+                      {p.nasabah?.nama_lengkap ?? "—"}
+                    </td>
+                    <td style={{ padding: "11px 16px", textAlign: "right", fontWeight: 700, color: "var(--acc)" }}>
+                      {formatRupiah(p.jumlah_diterima)}
+                    </td>
+                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.periode_lebaran}</td>
+                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.admin_saksi}</td>
+                    <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "11px", color: "var(--text3)" }}>
+                      {formatTanggal(p.tanggal_pencairan)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </SectionCard>
       )}
     </div>
   );

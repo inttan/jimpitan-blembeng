@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatTanggal } from "@/lib/utils";
 import FormPenarikan from "@/components/forms/FormPenarikan";
+import { AlertTriangle, Banknote } from "lucide-react";
 
 async function getData() {
   const supabase = await createClient();
@@ -12,97 +13,150 @@ async function getData() {
       .select("*, nasabah:nasabah_id (nama_lengkap)")
       .order("created_at", { ascending: false }).limit(20),
   ]);
-  return { nasabahList: (nasabahRes.data ?? []) as any[], penarikanList: (penarikanRes.data ?? []) as any[] };
+  return { nasabahList: nasabahRes.data ?? [], penarikanList: penarikanRes.data ?? [] };
 }
+
+const card = {
+  background: "var(--surf)", border: "1px solid var(--bdr)",
+  borderRadius: "var(--r)", boxShadow: "var(--shd)",
+};
 
 export default async function PenarikanPage() {
   const { nasabahList, penarikanList } = await getData();
-  const totalSiapCair = nasabahList.reduce((s: number, n: any) => s + (n.saldo_aktif ?? 0), 0);
+  const totalSiapCair = nasabahList.reduce((s, n) => s + (n.saldo_aktif ?? 0), 0);
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 className="text-xl font-bold text-gray-900">Pencairan Tabungan Lebaran</h1>
-          <p className="text-sm text-gray-500">
+          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.4px" }}>
+            Pencairan Tabungan Lebaran
+          </h1>
+          <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px" }}>
             {nasabahList.length} nasabah siap cairkan · Total {formatRupiah(totalSiapCair)}
           </p>
         </div>
         <FormPenarikan nasabahList={nasabahList} />
       </div>
 
-      <div className="flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-        <span className="text-2xl">🕌</span>
+      {/* Info banner */}
+      <div style={{
+        background: "var(--acc2)", border: "1px solid rgba(217,119,6,0.2)",
+        borderRadius: "var(--r)", padding: "14px 18px",
+        display: "flex", gap: "12px", alignItems: "flex-start",
+      }}>
+        <div style={{
+          width: "34px", height: "34px", borderRadius: "9px",
+          background: "rgba(217,119,6,0.12)", flexShrink: 0,
+          display: "flex", alignItems: "center", justifyContent: "center", color: "var(--acc)",
+        }}>
+          <AlertTriangle size={16} strokeWidth={2.5} />
+        </div>
         <div>
-          <p className="font-semibold text-amber-800">Panduan Pencairan</p>
-          <p className="text-xs text-amber-700 mt-0.5 leading-relaxed">
-            Pencairan dilakukan sekali setahun sebelum Lebaran. Setelah dicatat, saldo nasabah otomatis berkurang.
+          <p style={{ fontSize: "13px", fontWeight: 700, color: "var(--acc)" }}>Panduan Pencairan</p>
+          <p style={{ fontSize: "12px", color: "var(--text2)", marginTop: "4px", lineHeight: 1.65 }}>
+            Pencairan hanya dilakukan sekali setahun sebelum Lebaran. Jumlah yang dicairkan maksimal
+            sama dengan saldo aktif nasabah. Setelah dicatat, saldo nasabah otomatis berkurang.
             Kirim notifikasi WA setelah pencairan dicatat.
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-        <div className="border-b border-gray-50 px-5 py-4">
-          <p className="text-sm font-semibold text-gray-800">Nasabah Siap Dicairkan</p>
+      {/* Daftar siap cairkan */}
+      <div style={card}>
+        <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--bdr)", display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{
+            width: "28px", height: "28px", borderRadius: "7px", background: "var(--p5)",
+            display: "flex", alignItems: "center", justifyContent: "center", color: "var(--p)",
+          }}>
+            <Banknote size={14} strokeWidth={2.5} />
+          </div>
+          <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>
+            Nasabah yang Punya Saldo (Siap Dicairkan)
+          </p>
         </div>
+
         {nasabahList.length === 0 ? (
-          <div className="py-10 text-center text-sm text-gray-400">
+          <div style={{ padding: "40px", textAlign: "center", fontSize: "13px", color: "var(--text3)" }}>
             Semua saldo sudah dicairkan atau belum ada transaksi.
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-50 text-xs uppercase tracking-wider text-gray-400">
-              <tr>
-                <th className="px-5 py-3 text-left">Nama Nasabah</th>
-                <th className="px-5 py-3 text-left">No. WA</th>
-                <th className="px-5 py-3 text-right">Saldo Siap Cair</th>
-              </tr>
-            </thead>
-            <tbody>
-              {nasabahList.map((n: any, i: number) => (
-                <tr key={n.id} className={`border-b border-gray-50 hover:bg-gray-50 ${i === nasabahList.length - 1 ? "border-0" : ""}`}>
-                  <td className="px-5 py-3.5 font-medium text-gray-800">{n.nama_lengkap}</td>
-                  <td className="px-5 py-3.5 text-gray-500">{n.no_wa ?? "—"}</td>
-                  <td className="px-5 py-3.5 text-right font-bold text-emerald-700">{formatRupiah(n.saldo_aktif ?? 0)}</td>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
+                  {["Nama Nasabah", "No. WA", "Saldo Siap Cair"].map((h, i) => (
+                    <th key={h} style={{
+                      padding: "10px 16px", textAlign: i === 2 ? "right" : "left",
+                      fontSize: "10px", fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)",
+                    }}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-              <tr className="bg-amber-50">
-                <td colSpan={2} className="px-5 py-3 text-right font-semibold text-amber-800">Total harus disiapkan</td>
-                <td className="px-5 py-3 text-right font-bold text-amber-700 text-base">{formatRupiah(totalSiapCair)}</td>
-              </tr>
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {nasabahList.map((n, i) => (
+                  <tr key={n.id} style={{ borderBottom: i < nasabahList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
+                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text)" }}>{n.nama_lengkap}</td>
+                    <td style={{ padding: "12px 16px", color: "var(--text2)" }}>{n.no_wa ?? "—"}</td>
+                    <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "var(--p)" }}>
+                      {formatRupiah(n.saldo_aktif ?? 0)}
+                    </td>
+                  </tr>
+                ))}
+                <tr style={{ background: "var(--acc2)", borderTop: "1px solid var(--bdr)" }}>
+                  <td colSpan={2} style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "var(--acc)", fontSize: "12px" }}>
+                    Total yang harus disiapkan
+                  </td>
+                  <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 800, color: "var(--acc)", fontSize: "15px" }}>
+                    {formatRupiah(totalSiapCair)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
+      {/* Riwayat */}
       {penarikanList.length > 0 && (
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-          <div className="border-b border-gray-50 px-5 py-4">
-            <p className="text-sm font-semibold text-gray-800">Riwayat Pencairan</p>
+        <div style={card}>
+          <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--bdr)" }}>
+            <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>Riwayat Pencairan</p>
           </div>
-          <table className="w-full text-sm">
-            <thead className="border-b border-gray-50 text-xs uppercase tracking-wider text-gray-400">
-              <tr>
-                <th className="px-5 py-3 text-left">Nasabah</th>
-                <th className="px-5 py-3 text-right">Jumlah</th>
-                <th className="px-5 py-3 text-left">Periode</th>
-                <th className="px-5 py-3 text-left">Admin Saksi</th>
-                <th className="px-5 py-3 text-right">Tanggal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {penarikanList.map((p: any, i: number) => (
-                <tr key={p.id} className={`border-b border-gray-50 hover:bg-gray-50 ${i === penarikanList.length - 1 ? "border-0" : ""}`}>
-                  <td className="px-5 py-3 font-medium text-gray-800">{p.nasabah?.nama_lengkap}</td>
-                  <td className="px-5 py-3 text-right font-bold text-amber-700">{formatRupiah(p.jumlah_diterima)}</td>
-                  <td className="px-5 py-3 text-gray-600">{p.periode_lebaran}</td>
-                  <td className="px-5 py-3 text-gray-500">{p.admin_saksi}</td>
-                  <td className="px-5 py-3 text-right text-xs text-gray-400">{formatTanggal(p.tanggal_pencairan)}</td>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
+                  {["Nasabah", "Jumlah", "Periode", "Admin Saksi", "Tanggal"].map((h, i) => (
+                    <th key={h} style={{
+                      padding: "10px 16px", textAlign: i === 1 || i === 4 ? "right" : "left",
+                      fontSize: "10px", fontWeight: 600,
+                      textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)",
+                    }}>{h}</th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {penarikanList.map((p: any, i: number) => (
+                  <tr key={p.id} style={{ borderBottom: i < penarikanList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
+                    <td style={{ padding: "11px 16px", fontWeight: 600, color: "var(--text)" }}>
+                      {p.nasabah?.nama_lengkap}
+                    </td>
+                    <td style={{ padding: "11px 16px", textAlign: "right", fontWeight: 700, color: "var(--acc)" }}>
+                      {formatRupiah(p.jumlah_diterima)}
+                    </td>
+                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.periode_lebaran}</td>
+                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.admin_saksi}</td>
+                    <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "11px", color: "var(--text3)" }}>
+                      {formatTanggal(p.tanggal_pencairan)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

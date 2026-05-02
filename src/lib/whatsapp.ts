@@ -1,37 +1,69 @@
 import { formatRupiah } from "@/lib/utils";
 
+// ── Tipe ──────────────────────────────────────────────────────────────
+export interface ItemSetoranNotif {
+  nama_sampah: string;
+  berat_kg: number;
+  nilai_kotor: number;
+  potongan_kas: number;
+  nilai_bersih: number;
+}
+
 export interface SetoranNotifPayload {
-  namaНасabah: string; namaСampah: string; beratKg: number;
-  nilaiKotor: number; potonganKas: number; nilaiBersih: number;
-  saldoAktif: number; tanggal: string; noWa: string;
+  namaNasabah: string;
+  items: ItemSetoranNotif[];         // ← ganti dari single field
+  totalKotor: number;
+  totalPotongan: number;
+  totalBersih: number;
+  saldoAktif: number;
+  tanggal: string;
+  noWa: string;
   periodeTabungan?: string;
 }
 
 export interface PenarikanNotifPayload {
-  namaNasabah: string; jumlahDiterima: number; periodeLebaran: string;
-  adminSaksi: string; noWa: string; sisaSaldo: number;
+  namaNasabah: string;
+  jumlahDiterima: number;
+  periodeLebaran: string;
+  adminSaksi: string;
+  noWa: string;
+  sisaSaldo: number;
 }
 
+// ── Generate WA Setoran ───────────────────────────────────────────────
 export function generateWASetoranLink(payload: SetoranNotifPayload): string {
-  const { namaНасabah, namaСampah, beratKg, nilaiKotor, potonganKas, nilaiBersih, saldoAktif, tanggal, noWa, periodeTabungan } = payload;
+  const {
+    namaNasabah, items, totalKotor, totalPotongan,
+    totalBersih, saldoAktif, tanggal, noWa, periodeTabungan,
+  } = payload;
+
   const periode = periodeTabungan ?? new Date().getFullYear().toString();
+
+  // Baris detail tiap jenis sampah
+  const detailSampah = items.map((item, idx) =>
+    [
+      `   ${idx + 1}. ${item.nama_sampah}`,
+      `      Berat  : ${item.berat_kg.toFixed(2)} kg`,
+      `      Nilai  : ${formatRupiah(item.nilai_bersih)}`,
+    ].join("\n")
+  ).join("\n");
+
   const pesan = [
     `🌿 *BANK SAMPAH DESA KEBONAGUNG*`,
     `━━━━━━━━━━━━━━━━━━━━━`,
     `📋 *BUKTI SETORAN SAMPAH*`,
     ``,
-    `👤 Nasabah   : *${namaНасabah}*`,
+    `👤 Nasabah   : *${namaNasabah}*`,
     `📅 Tanggal   : ${tanggal}`,
     ``,
     `♻️ *DETAIL SAMPAH*`,
-    `   Jenis     : ${namaСampah}`,
-    `   Berat     : *${beratKg.toFixed(2)} kg*`,
+    detailSampah,
     ``,
     `💰 *RINCIAN NILAI*`,
-    `   Nilai Kotor    : ${formatRupiah(nilaiKotor)}`,
-    `   Potongan Kas   : -${formatRupiah(potonganKas)} (10%)`,
+    `   Nilai Kotor    : ${formatRupiah(totalKotor)}`,
+    `   Potongan Kas   : -${formatRupiah(totalPotongan)} (10%)`,
     `   ─────────────────────`,
-    `   Masuk Tabungan : *${formatRupiah(nilaiBersih)}*`,
+    `   Masuk Tabungan : *${formatRupiah(totalBersih)}*`,
     ``,
     `🏦 *TOTAL TABUNGAN LEBARAN ${periode.toUpperCase()}*`,
     `   *${formatRupiah(saldoAktif)}*`,
@@ -40,13 +72,17 @@ export function generateWASetoranLink(payload: SetoranNotifPayload): string {
     `━━━━━━━━━━━━━━━━━━━━━`,
     `Terima kasih sudah menabung sampah! 🙏`,
   ].join("\n");
+
   const nomorBersih = noWa.replace(/\D/g, "");
   return `https://wa.me/${nomorBersih}?text=${encodeURIComponent(pesan)}`;
 }
 
+// ── Generate WA Penarikan (tidak berubah) ────────────────────────────
 export function generateWAPenarikanLink(payload: PenarikanNotifPayload): string {
   const { namaNasabah, jumlahDiterima, periodeLebaran, adminSaksi, noWa, sisaSaldo } = payload;
-  const tanggal = new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+  const tanggal = new Date().toLocaleDateString("id-ID", {
+    day: "numeric", month: "long", year: "numeric",
+  });
   const pesan = [
     `🎉 *BANK SAMPAH DESA KEBONAGUNG*`,
     `━━━━━━━━━━━━━━━━━━━━━`,
@@ -67,6 +103,7 @@ export function generateWAPenarikanLink(payload: PenarikanNotifPayload): string 
     `━━━━━━━━━━━━━━━━━━━━━`,
     `Selamat Hari Raya! Minal Aidin Wal Faizin 🌙`,
   ].join("\n");
+
   const nomorBersih = noWa.replace(/\D/g, "");
   return `https://wa.me/${nomorBersih}?text=${encodeURIComponent(pesan)}`;
 }

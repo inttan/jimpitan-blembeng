@@ -43,7 +43,6 @@ export default function FormTambahNasabah() {
               {[
                 { name: "nama_lengkap", label: "Nama Lengkap", placeholder: "Siti Rahayu", required: true },
                 { name: "nik", label: "NIK", placeholder: "3308010101800001", required: false },
-                { name: "no_hp", label: "No. HP", placeholder: "08123456789", required: false },
                 { name: "no_wa", label: "No. WhatsApp", placeholder: "6281234567890 (pakai 62...)", required: false },
                 { name: "alamat", label: "Alamat", placeholder: "Desa Kebonagung RT 01", required: false },
                 { name: "rt_rw", label: "RT/RW", placeholder: "001/001", required: false },
