@@ -6,7 +6,7 @@ import RiwayatSetoranTable from "@/components/laporan/RiwayatSetoranTable";
 
 async function getLaporanData() {
   const supabase = await createClient();
-  const [saldoRes, setoranRes, kasRes, penarikanRes] = await Promise.all([
+  const [saldoRes, setoranRes, kasSetoranRes, kasLegacyRes, penarikanRes] = await Promise.all([
     supabase
       .from("v_saldo_nasabah")
       .select("*")
@@ -20,10 +20,18 @@ async function getLaporanData() {
       .order("created_at", { ascending: false })
       .limit(50),
 
+    // Source of truth kas: dari setoran.total_potongan_kas (bukan kas_operasional,
+    // karena kas_operasional cuma audit trail yang bergantung trigger — bisa bolong)
     supabase
-      .from("kas_operasional")
-      .select("jumlah, tanggal")
-      .order("tanggal", { ascending: false }),
+      .from("setoran")
+      .select("total_potongan_kas")
+      .eq("status", "terverifikasi"),
+
+    // Sisa data lama yang belum dimigrasi ke struktur setoran/setoran_detail
+    supabase
+      .from("transaksi_setoran")
+      .select("potongan_kas")
+      .eq("status", "terverifikasi"),
 
     supabase
       .from("transaksi_penarikan_tunai")
@@ -31,7 +39,9 @@ async function getLaporanData() {
       .order("created_at", { ascending: false }),
   ]);
 
-  const totalKas = (kasRes.data ?? []).reduce((s, k) => s + k.jumlah, 0);
+  const totalKasBaru = (kasSetoranRes.data ?? []).reduce((s, k) => s + (k.total_potongan_kas ?? 0), 0);
+  const totalKasLama = (kasLegacyRes.data ?? []).reduce((s, k) => s + (k.potongan_kas ?? 0), 0);
+  const totalKas = totalKasBaru + totalKasLama;
 
   return {
     saldoList:    saldoRes.data ?? [],
@@ -139,7 +149,6 @@ export default async function LaporanPage() {
                     {n.nama_lengkap}
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text2)" }}>
-                    {/* ← nama kolom yang benar dari v_saldo_nasabah baru */}
                     {formatRupiah(n.total_setoran ?? 0)}
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--red)" }}>
@@ -149,7 +158,6 @@ export default async function LaporanPage() {
                     {formatRupiah(n.saldo_aktif ?? 0)}
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text3)" }}>
-                    {/* ← nama kolom yang benar */}
                     {n.jumlah_transaksi}x
                   </td>
                 </tr>

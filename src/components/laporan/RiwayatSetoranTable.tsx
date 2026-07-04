@@ -31,14 +31,13 @@ export default function RiwayatSetoranTable({ setoranList }: { setoranList: any[
         </thead>
         <tbody>
           {setoranList.map((t: any, i: number) => {
-            const rowKey = t.id ?? t.setoran_id ?? String(i);
+            const rowKey = t.id;
             const isOpen = expanded.has(rowKey);
             const isLast = i === setoranList.length - 1;
             const sampahList: string[] = t.nama_sampah_list ?? [];
 
             return (
               <React.Fragment key={rowKey}>
-                {/* ── Baris utama setoran ── */}
                 <tr
                   onClick={() => toggle(rowKey)}
                   style={{
@@ -50,7 +49,7 @@ export default function RiwayatSetoranTable({ setoranList }: { setoranList: any[
                 >
                   <td style={{ padding: "11px 16px" }}>
                     <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--text3)" }}>
-                      {t.kode ?? t.kode_setoran}
+                      {t.kode}
                     </span>
                   </td>
                   <td style={{ padding: "11px 16px", fontWeight: 600, color: "var(--text)" }}>
@@ -95,11 +94,10 @@ export default function RiwayatSetoranTable({ setoranList }: { setoranList: any[
                   </td>
                 </tr>
 
-                {/* ── Baris expand: detail per jenis sampah ── */}
                 {isOpen && (
                   <tr style={{ borderBottom: !isLast ? "1px solid var(--bdr)" : "none" }}>
                     <td colSpan={8} style={{ padding: "0 16px 12px 40px", background: "var(--p5)" }}>
-                      <DetailSetoran setoranId={rowKey} isLegacy={!t.setoran_id && !!t.id} />
+                      <DetailSetoran setoranId={rowKey} />
                     </td>
                   </tr>
                 )}
@@ -112,21 +110,18 @@ export default function RiwayatSetoranTable({ setoranList }: { setoranList: any[
   );
 }
 
-function DetailSetoran({ setoranId, isLegacy }: { setoranId: string; isLegacy: boolean }) {
+function DetailSetoran({ setoranId }: { setoranId: string }) {
   const [data, setData] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(false);
 
   React.useEffect(() => {
     setLoading(true);
-    const endpoint = isLegacy
-      ? `/api/setoran-detail?legacy_id=${setoranId}`
-      : `/api/setoran-detail?id=${setoranId}`;
-    fetch(endpoint)
+    fetch(`/api/setoran-detail?id=${setoranId}`)
       .then((r) => r.json())
       .then((d) => setData(d.items ?? []))
       .catch(() => setData([]))
       .finally(() => setLoading(false));
-  }, [setoranId, isLegacy]);
+  }, [setoranId]);
 
   if (loading) return (
     <p style={{ fontSize: "12px", color: "var(--text3)", padding: "8px 0" }}>Memuat detail...</p>
