@@ -78,6 +78,17 @@ function detailRow(item: any) {
   });
 }
 
+type RowNormal = {
+  kode: string;
+  nama_lengkap: string;
+  tanggal: string;
+  total_kotor: number;
+  total_potongan_kas: number;
+  total_nilai_bersih: number;
+  total_berat: number;
+  items: { nama_sampah: string; berat_kg: number; nilai_kotor: number; potongan_kas: number; nilai_bersih: number }[];
+};
+
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const { searchParams } = new URL(req.url);
@@ -92,7 +103,7 @@ export async function GET(req: NextRequest) {
     endDate = `${tahun}-${bln}-${String(lastDay).padStart(2, "0")}`;
   }
 
-  // ── Query 1: data BARU dari tabel setoran ─────────────────────────────
+  // ── Query: data dari tabel setoran (normalized schema) ─────────────────
   let setoranQuery = supabase
     .from("setoran")
     .select(`
@@ -112,40 +123,11 @@ export async function GET(req: NextRequest) {
     setoranQuery = setoranQuery.gte("created_at", startDate).lte("created_at", endDate);
   }
 
-  // ── Query 2: data LAMA dari transaksi_setoran ─────────────────────────
-  let legacyQuery = supabase
-    .from("transaksi_setoran")
-    .select(`
-      id, kode_transaksi, tanggal_setor,
-      nilai_kotor, potongan_kas, nilai_bersih, berat_kg, harga_satuan,
-      nasabah:nasabah_id (nama_lengkap),
-      sampah:sampah_id (nama_sampah)
-    `)
-    .eq("status", "terverifikasi")
-    .order("tanggal_setor", { ascending: false })
-    .limit(500);
-
-  if (bulan) {
-    legacyQuery = legacyQuery.gte("tanggal_setor", startDate).lte("tanggal_setor", endDate);
-  }
-
-  const [setoranRes, legacyRes] = await Promise.all([setoranQuery, legacyQuery]);
-
+  const setoranRes = await setoranQuery;
   if (setoranRes.error) return NextResponse.json({ error: setoranRes.error.message }, { status: 500 });
 
-  // ── Normalisasi ke format seragam ─────────────────────────────────────
-  type RowNormal = {
-    kode: string;
-    nama_lengkap: string;
-    tanggal: string;
-    total_kotor: number;
-    total_potongan_kas: number;
-    total_nilai_bersih: number;
-    total_berat: number;
-    items: { nama_sampah: string; berat_kg: number; nilai_kotor: number; potongan_kas: number; nilai_bersih: number }[];
-  };
-
-  const rowsBaru: RowNormal[] = (setoranRes.data ?? []).map((s: any) => {
+  // ── Normalisasi ────────────────────────────────────────────────────────
+  const rows: RowNormal[] = (setoranRes.data ?? []).map((s: any) => {
     const details = s.setoran_detail ?? [];
     return {
       kode: s.kode_setoran ?? "-",
@@ -163,29 +145,7 @@ export async function GET(req: NextRequest) {
         nilai_bersih: d.nilai_bersih ?? 0,
       })),
     };
-  });
-
-  const rowsLama: RowNormal[] = (legacyRes.data ?? []).map((t: any) => ({
-    kode: t.kode_transaksi ?? "-",
-    nama_lengkap: t.nasabah?.nama_lengkap ?? "-",
-    tanggal: t.tanggal_setor,
-    total_kotor: t.nilai_kotor ?? 0,
-    total_potongan_kas: t.potongan_kas ?? 0,
-    total_nilai_bersih: t.nilai_bersih ?? 0,
-    total_berat: t.berat_kg ?? 0,
-    items: [{
-      nama_sampah: t.sampah?.nama_sampah ?? "-",
-      berat_kg: t.berat_kg ?? 0,
-      nilai_kotor: t.nilai_kotor ?? 0,
-      potongan_kas: t.potongan_kas ?? 0,
-      nilai_bersih: t.nilai_bersih ?? 0,
-    }],
-  }));
-
-  // Gabung & sort by tanggal desc
-  const rows: RowNormal[] = [...rowsBaru, ...rowsLama].sort(
-    (a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
-  );
+  }).sort((a, b) => new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime());
 
   // ── Hitung total ──────────────────────────────────────────────────────
   const totalBeratAll  = rows.reduce((s, r) => s + r.total_berat, 0);

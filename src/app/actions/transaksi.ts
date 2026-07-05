@@ -2,7 +2,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 
-// ── Tipe ──────────────────────────────────────────────────────────────
 export interface ItemSetoranInput {
   sampah_id: string;
   berat_kg: number;
@@ -21,14 +20,15 @@ function buatKode(prefix: string) {
   return `${prefix}-${tgl}-${rnd}`;
 }
 
-// ── simpanSetoran ─────────────────────────────────────────────────────
 export async function simpanSetoran(formData: SetoranFormData) {
   const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Sesi login tidak valid. Silakan login ulang." };
 
   if (!formData.items?.length)
     return { success: false, error: "Tidak ada item sampah." };
 
-  // 1. Validasi & ambil harga server untuk semua item sekaligus
   const sampahIds = formData.items.map((i) => i.sampah_id);
   const { data: hargaList, error: errHarga } = await supabase
     .from("v_harga_aktif")
@@ -39,11 +39,8 @@ export async function simpanSetoran(formData: SetoranFormData) {
   if (errHarga || !hargaList?.length)
     return { success: false, error: "Gagal mengambil data harga sampah." };
 
-  const hargaMap = Object.fromEntries(
-    hargaList.map((h) => [h.sampah_id, h])
-  );
+  const hargaMap = Object.fromEntries(hargaList.map((h) => [h.sampah_id, h]));
 
-  // 2. Hitung nilai tiap item
   const itemsHitung = formData.items.map((item) => {
     const hargaData = hargaMap[item.sampah_id];
     if (!hargaData) throw new Error(`Sampah tidak ditemukan: ${item.sampah_id}`);
@@ -69,12 +66,12 @@ export async function simpanSetoran(formData: SetoranFormData) {
   const totalPotongan = itemsHitung.reduce((s, i) => s + i.potongan_kas, 0);
   const totalBersih   = itemsHitung.reduce((s, i) => s + i.nilai_bersih, 0);
 
-  // 3. Insert header setoran
   const { data: setoran, error: errSetoran } = await supabase
     .from("setoran")
     .insert({
       kode_setoran:       buatKode("SET"),
       nasabah_id:         formData.nasabah_id,
+      dicatat_oleh:       user.id,
       total_kotor:        totalKotor,
       total_potongan_kas: totalPotongan,
       total_nilai_bersih: totalBersih,
@@ -87,7 +84,6 @@ export async function simpanSetoran(formData: SetoranFormData) {
   if (errSetoran || !setoran)
     return { success: false, error: "Gagal menyimpan setoran: " + errSetoran?.message };
 
-  // 4. Insert detail (batch)
   const detailRows = itemsHitung.map((item) => ({
     setoran_id:   setoran.setoran_id,
     sampah_id:    item.sampah_id,
@@ -105,7 +101,6 @@ export async function simpanSetoran(formData: SetoranFormData) {
   if (errDetail)
     return { success: false, error: "Gagal menyimpan detail: " + errDetail.message };
 
-  // 5. Ambil saldo terbaru
   const { data: saldo } = await supabase
     .from("v_saldo_nasabah")
     .select("nama_lengkap, no_wa, saldo_aktif, kode_nasabah")
@@ -130,12 +125,14 @@ export async function simpanSetoran(formData: SetoranFormData) {
   };
 }
 
-// ── cairkanTabungan (tidak berubah) ───────────────────────────────────
 export async function cairkanTabungan(formData: {
   nasabah_id: string; jumlah_diterima: number;
   admin_saksi: string; periode_lebaran: string; catatan?: string;
 }) {
   const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Sesi login tidak valid. Silakan login ulang." };
 
   const { data: saldo } = await supabase
     .from("v_saldo_nasabah").select("saldo_aktif, nama_lengkap, no_wa")
@@ -153,6 +150,7 @@ export async function cairkanTabungan(formData: {
   const { error } = await supabase.from("transaksi_penarikan_tunai").insert({
     kode_penarikan:  kode,
     nasabah_id:      formData.nasabah_id,
+    dicairkan_oleh:  user.id,
     jumlah_diterima: formData.jumlah_diterima,
     admin_saksi:     formData.admin_saksi,
     periode_lebaran: formData.periode_lebaran,

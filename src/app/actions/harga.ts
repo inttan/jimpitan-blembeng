@@ -15,6 +15,10 @@ export async function getHargaAktif() {
 
 export async function updateHargaSampah(formData: FormData) {
   const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Sesi login tidak valid. Silakan login ulang." };
+
   const sampah_id = formData.get("sampah_id")?.toString();
   const harga = parseFloat(formData.get("harga_per_kg")?.toString() ?? "0");
   const berlaku = formData.get("berlaku_mulai")?.toString();
@@ -29,7 +33,7 @@ export async function updateHargaSampah(formData: FormData) {
     harga_per_kg: harga,
     berlaku_mulai: berlaku,
     catatan: formData.get("catatan")?.toString() || null,
-    dibuat_oleh: "Admin",
+    dibuat_oleh: user.id,
   });
 
   if (error) return { success: false, error: "Gagal: " + error.message };
@@ -41,6 +45,9 @@ export async function updateHargaSampah(formData: FormData) {
 
 export async function tambahSampahDenganHarga(formData: FormData) {
   const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: "Sesi login tidak valid. Silakan login ulang." };
 
   const nama = formData.get("nama_sampah")?.toString().trim();
   const kategori = formData.get("kategori")?.toString();
@@ -67,7 +74,7 @@ export async function tambahSampahDenganHarga(formData: FormData) {
     harga_per_kg: harga,
     berlaku_mulai: new Date().toISOString().split("T")[0],
     catatan,
-    dibuat_oleh: "Admin",
+    dibuat_oleh: user.id,
   });
 
   if (errHarga) return { success: false, error: "Sampah tersimpan tapi harga gagal. " + errHarga.message };
