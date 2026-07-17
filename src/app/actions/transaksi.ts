@@ -113,21 +113,35 @@ export async function simpanSetoran(formData: SetoranFormData) {
   return {
     success: true,
     data: {
-      kode_setoran: setoran.kode_setoran,
-      items: itemsHitung.map(({ sampah_id: _, ...rest }) => rest),
+      kode_setoran:       setoran.kode_setoran,
+      items:              itemsHitung.map(({ sampah_id: _, ...rest }) => rest),
       total_kotor:        totalKotor,
       total_potongan_kas: totalPotongan,
       total_nilai_bersih: totalBersih,
-      nasabah: saldo ?? {
-        nama_lengkap: "—", no_wa: null, saldo_aktif: 0, kode_nasabah: "—",
+      saldo_sebelum:       saldo?.saldo_aktif ?? 0,
+      saldo_sesudah:       (saldo?.saldo_aktif ?? 0) + totalBersih,
+      nama_nasabah:        saldo?.nama_lengkap ?? "",
+      no_wa_nasabah:       saldo?.no_wa ?? null,
+      saldo_aktif:         (saldo?.saldo_aktif ?? 0) + totalBersih,
+      kode_nasabah:        saldo?.kode_nasabah ?? "",
+      catatan:             formData.catatan ?? null,
+      tanggal_catat:        new Date().toISOString(),
+      // Nested object untuk backward compat dengan FormSetoran
+      nasabah: {
+        nama_lengkap: saldo?.nama_lengkap ?? "—",
+        no_wa:       saldo?.no_wa ?? null,
+        saldo_aktif: (saldo?.saldo_aktif ?? 0) + totalBersih,
       },
     },
   };
 }
 
 export async function cairkanTabungan(formData: {
-  nasabah_id: string; jumlah_diterima: number;
-  admin_saksi: string; periode_lebaran: string; catatan?: string;
+  nasabah_id: string;
+  jumlah_diterima: number;
+  admin_saksi: string;
+  periode_lebaran: string;
+  catatan?: string;
 }) {
   const supabase = await createClient();
 
@@ -171,7 +185,21 @@ export async function cairkanTabungan(formData: {
     data: {
       kode_penarikan:  kode,
       jumlah_diterima: formData.jumlah_diterima,
-      nasabah:         saldoBaru ?? saldo,
+      periode_lebaran: formData.periode_lebaran,
+      admin_saksi:     formData.admin_saksi,
+      saldo_sebelum:   saldo?.saldo_aktif ?? 0,
+      saldo_sesudah:   saldoBaru?.saldo_aktif ?? 0,
+      tanggal_catat:    new Date().toISOString(),
+      catatan:         formData.catatan ?? null,
+      nama_nasabah:    saldo?.nama_lengkap ?? "",
+      no_wa_nasabah:   saldo?.no_wa ?? null,
+      saldo_aktif:     saldoBaru?.saldo_aktif ?? 0,
+      // Nested object untuk backward compat dengan FormPenarikan
+      nasabah: {
+        nama_lengkap: saldo?.nama_lengkap ?? "",
+        no_wa:       saldo?.no_wa ?? null,
+        saldo_aktif: saldoBaru?.saldo_aktif ?? 0,
+      },
     },
   };
 }

@@ -1,13 +1,15 @@
 "use client";
 import { useTheme } from "next-themes";
 import { useLang } from "@/components/providers/LangProvider";
-import { useEffect, useState } from "react";
-import { Sun, Moon, User } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { Sun, Moon, User, LogOut } from "lucide-react";
+import { logout } from "@/app/actions/auth";
 
 export default function TopBar() {
   const { theme, setTheme } = useTheme();
   const { lang, setLang } = useLang();
   const [mounted, setMounted] = useState(false);
+  const [isPending, startTransition] = useTransition();
   useEffect(() => setMounted(true), []);
 
   const date = new Date().toLocaleDateString(
@@ -86,6 +88,23 @@ export default function TopBar() {
             Admin
           </span>
         </div>
+
+        {/* Logout button */}
+        <button
+          onClick={() => startTransition(() => logout())}
+          disabled={isPending}
+          title="Keluar"
+          style={{
+            width: "32px", height: "32px", borderRadius: "8px",
+            border: "1px solid var(--bdr)", background: "var(--surf2)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            cursor: isPending ? "wait" : "pointer",
+            transition: "all 0.15s", color: "var(--text3)",
+            opacity: isPending ? 0.6 : 1,
+          }}
+        >
+          <LogOut size={14} strokeWidth={2} />
+        </button>
       </div>
     </header>
   );
