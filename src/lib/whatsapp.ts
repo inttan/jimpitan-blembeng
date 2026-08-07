@@ -49,7 +49,7 @@ export function generateWAJimpitanLink(payload: JimpitanNotifPayload): string {
 
 /** Reminder warga yang belum setor minggu ini */
 export function generateWAReminderLink(payload: ReminderNotifPayload): string {
-  const { namaWarga, noHp, mingguKe, nominal = 3500 } = payload;
+  const { namaWarga, noHp, mingguKe, nominal = 5000 } = payload;
   const periode = mingguKe ? formatPeriodeMinggu(mingguKe) : "minggu ini";
 
   const pesan = [
