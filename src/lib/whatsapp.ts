@@ -33,19 +33,15 @@ export function generateWAJimpitanLink(payload: JimpitanNotifPayload): string {
   } = payload;
 
   const pesan = [
-    `🏘️ *${APP_NAME.toUpperCase()}*`,
-    `━━━━━━━━━━━━━━━━━━━━━`,
-    `📋 *BUKTI SETORAN JIMPITAN*`,
+    `Yth. Bapak/Ibu ${namaWarga}`,
     ``,
-    `👤 Warga     : *${namaWarga}*`,
-    `📅 Periode   : ${formatPeriodeMinggu(mingguKe)}`,
-    `📌 Status    : *${labelStatus(status)}*`,
+    `Setoran jimpitan untuk periode ${formatPeriodeMinggu(mingguKe)} telah kami terima.`,
     ``,
-    `💰 Setoran   : *${formatRupiah(jumlahSetor)}*`,
+    `Nominal: ${formatRupiah(jumlahSetor)}`,
+    `Status: ${labelStatus(status)}`,
     ``,
-    `_(Simpan pesan ini sebagai bukti.)_`,
-    `━━━━━━━━━━━━━━━━━━━━━`,
-    `Terima kasih atas partisipasinya 🙏`,
+    `Terima kasih.`,
+    `${APP_NAME}`,
   ].join("\n");
 
   return `https://wa.me/${normalisasiNoHp(noHp)}?text=${encodeURIComponent(pesan)}`;
@@ -57,20 +53,13 @@ export function generateWAReminderLink(payload: ReminderNotifPayload): string {
   const periode = mingguKe ? formatPeriodeMinggu(mingguKe) : "minggu ini";
 
   const pesan = [
-    `🏘️ *${APP_NAME.toUpperCase()}*`,
-    `━━━━━━━━━━━━━━━━━━━━━`,
-    `🔔 *PENGINGAT SETORAN JIMPITAN*`,
+    `Yth. Bapak/Ibu ${namaWarga}`,
     ``,
-    `Yth. Bapak/Ibu *${namaWarga}*,`,
+    `Mohon kesediaannya untuk menyetorkan jimpitan periode ${periode}.`,
+    `Nominal: ${formatRupiah(nominal)}`,
     ``,
-    `Mohon kesediaannya untuk menyetorkan jimpitan`,
-    `periode *${periode}*.`,
-    ``,
-    `💵 Nominal standar: *${formatRupiah(nominal)}*`,
-    ``,
-    `Terima kasih atas kerja samanya 🙏`,
-    `━━━━━━━━━━━━━━━━━━━━━`,
-    `_Pengurus ${APP_NAME}_`,
+    `Terima kasih.`,
+    `${APP_NAME}`,
   ].join("\n");
 
   return `https://wa.me/${normalisasiNoHp(noHp)}?text=${encodeURIComponent(pesan)}`;
@@ -90,17 +79,15 @@ export function generateWAKasKeluarLink(payload: {
   });
 
   const pesan = [
-    `🏘️ *${APP_NAME.toUpperCase()}*`,
-    `━━━━━━━━━━━━━━━━━━━━━`,
-    `📤 *PENGELUARAN KAS KEGIATAN*`,
+    `Yth. Warga ${APP_NAME}`,
     ``,
-    `📅 Tanggal   : ${tanggal}`,
-    `💰 Jumlah    : *${formatRupiah(jumlah)}*`,
-    `📝 Keterangan: ${keterangan}`,
-    `✅ Disetujui : ${disetujuiOleh}`,
-    saldoAkhir != null ? `\n🏦 Saldo kas : ${formatRupiah(saldoAkhir)}` : "",
+    `Pengeluaran kas kegiatan:`,
     ``,
-    `_Pencatatan transparan untuk warga dusun._`,
+    `Tanggal: ${tanggal}`,
+    `Jumlah: ${formatRupiah(jumlah)}`,
+    `Keterangan: ${keterangan}`,
+    `Disetujui oleh: ${disetujuiOleh}`,
+    saldoAkhir != null ? `Saldo kas: ${formatRupiah(saldoAkhir)}` : "",
   ].filter(Boolean).join("\n");
 
   return `https://wa.me/${normalisasiNoHp(noHp)}?text=${encodeURIComponent(pesan)}`;
