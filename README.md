@@ -1,19 +1,19 @@
-# Jimpitan Daven Blembeng
+# Jimpitan Dusun Blembeng
 
 ## 🌍 Overview
-Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Daven Blembeng, Purwojadi. Aplikasi web-based yang membantu pengelolaan kas dusun secara transparan dan akuntabel.
+Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo. Aplikasi web-based yang membantu pengelolaan kas dusun secara transparan dan akuntabel.
 
 ---
 
 ## ✨ Fitur
-- 🔐 **Autentikasi** - Login aman untuk Pengurus Daven
+- 🔐 **Autentikasi** - Login aman untuk Pengurus Dusun
 - 💰 **Kas Kegiatan** - Kelola kas masuk dan kas keluar dusun
-- 👥 **Data Warga** - Manajemen warga Daven Blembeng
+- 👥 **Data Warga** - Manajemen warga Dusun Blembeng
 - 💵 **Jimpitan Mingguan** - Catat setoran jimpitan warga per minggu
 - 👷 **Upah Penarik** - Kelola upah penarik jimpitan
 - 📊 **Dashboard** - Ringkasan statistik dan progres setoran
 - 📋 **Laporan** - Laporan kas kegiatan dalam format PDF
-- 🌐 **Website Daven** - Halaman publik untuk warga
+- 🌐 **Website Dusun** - Halaman publik untuk warga
 
 ---
 
@@ -58,7 +58,7 @@ npm run dev
 ## 📁 Struktur Database
 
 ### Tabel Utama
-- `warga` - Data warga Daven
+- `warga` - Data warga Dusun
 - `penarik` - Data penarik jimpitan
 - `jimpitan_transaksi` - Transaksi setoran jimpitan
 - `kas_kegiatan` - Ledger kas masuk dan keluar
@@ -73,7 +73,7 @@ npm run dev
 ---
 
 ## 📍 Lokasi
-Daven Blembeng, Purwojadi, Indonesia
+Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo, Indonesia
 
 ---
 

@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Beranda — Daven Blembeng",
-  description: "Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Daven Blembeng",
+  title: "Beranda — Dusun Blembeng",
+  description: "Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Dusun Blembeng",
 };
 
 async function getStats() {
@@ -109,7 +109,7 @@ export default async function BerandaPage() {
                 <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#86EFAC" }} />
                 <span className="absolute inset-0 w-2.5 h-2.5 rounded-full animate-ping" style={{ background: "#86EFAC", opacity: 0.5 }} />
               </div>
-              <span className="text-sm font-medium tracking-wide">Dusun Blembeng, Purwodadi</span>
+              <span className="text-sm font-medium tracking-wide">Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo</span>
             </div>
 
             {/* Main Heading */}
@@ -129,7 +129,7 @@ export default async function BerandaPage() {
                 <span className="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110" style={{ background: "var(--green)", color: "var(--paper)" }}>
                   <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
                 </span>
-                Kenali Daven Kami
+                Kenali Dusun Kami
               </Link>
 
               <Link href="/proker" className="group inline-flex items-center gap-3 px-7 py-4 rounded-2xl font-semibold text-base transition-all duration-300 hover:-translate-y-1 hover:shadow-xl" style={{ background: "rgba(246,243,234,0.1)", color: "var(--paper)", border: "1px solid rgba(246,243,234,0.2)", backdropFilter: "blur(8px)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
@@ -209,7 +209,7 @@ export default async function BerandaPage() {
         <div className="max-w-6xl mx-auto px-6 lg:px-8">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>Program Kerja Kami</h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text2)" }}>Berbagai program kegiatan untuk kebersamaan dan kesejahteraan warga Daven Blembeng</p>
+            <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text2)" }}>Berbagai program kegiatan untuk kebersamaan dan kesejahteraan warga Dusun Blembeng</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {programKerja.map((proker) => (
