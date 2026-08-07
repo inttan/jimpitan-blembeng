@@ -14,7 +14,7 @@ interface TxRow {
 async function getData() {
   const supabase = await createClient();
   const [wargaRes, txRes] = await Promise.all([
-    supabase.from("warga").select("id, nama, no_rumah").eq("status_aktif", true).order("nama"),
+    supabase.from("warga").select("id, nama, no_rumah, no_hp").eq("status_aktif", true).order("nama"),
     supabase
       .from("jimpitan_transaksi")
       .select("id, warga:warga_id (nama, no_rumah), status, jumlah_setor, minggu_ke, created_at")
@@ -29,7 +29,7 @@ async function getData() {
   }));
 
   return {
-    wargaList: (wargaRes.data ?? []).map((w: any) => ({ id: w.id, nama: w.nama, no_rumah: w.no_rumah })),
+    wargaList: (wargaRes.data ?? []).map((w: any) => ({ id: w.id, nama: w.nama, no_rumah: w.no_rumah, no_hp: w.no_hp })),
     existingTxs,
     txRows: txRes.data ?? [],
   };
