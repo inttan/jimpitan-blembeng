@@ -1,145 +1,182 @@
 import { createClient } from "@/lib/supabase/server";
-import { formatRupiah, formatTanggal } from "@/lib/utils";
-import { Landmark, Recycle, Briefcase } from "lucide-react";
+import { formatRupiah } from "@/lib/utils";
 import ButtonDownloadLaporan from "@/components/forms/ButtonDownloadLaporan";
-import RiwayatSetoranTable from "@/components/laporan/RiwayatSetoranTable";
 
 async function getLaporanData() {
   const supabase = await createClient();
-  const [saldoRes, setoranRes, kasSetoranRes, penarikanRes] = await Promise.all([
-    supabase.from("v_saldo_nasabah").select("*").eq("status", "aktif").order("saldo_aktif", { ascending: false }),
-    supabase.from("v_riwayat_setoran").select("*").order("created_at", { ascending: false }).limit(50),
-    supabase.from("setoran").select("total_potongan_kas").eq("status", "terverifikasi"),
-    supabase.from("transaksi_penarikan_tunai").select("*, nasabah:nasabah_id (nama_lengkap)").order("created_at", { ascending: false }),
+
+  const [saldoRes, txRes, kasRes, riwayatRes] = await Promise.all([
+    supabase.from("v_saldo_kas").select("saldo_kas_kegiatan").maybeSingle(),
+    supabase.from("jimpitan_transaksi").select("*, warga:warga_id (nama, no_rumah)").order("created_at", { ascending: false }).limit(100),
+    supabase.from("kas_kegiatan").select("*").order("created_at", { ascending: false }).limit(100),
+    supabase.from("riwayat_perubahan").select("*").order("created_at", { ascending: false }).limit(50),
   ]);
 
-  const totalKas = (kasSetoranRes.data ?? []).reduce((s, k) => s + (k.total_potongan_kas ?? 0), 0);
+  const aktivitas: any[] = [];
 
-  return {
-    saldoList: saldoRes.data ?? [],
-    setoranList: setoranRes.data ?? [],
-    totalKas,
-    penarikanList: penarikanRes.data ?? [],
-  };
-}
+  (txRes.data ?? []).forEach((t: any) => {
+    const waktu = new Date(t.created_at);
+    const labelStatus: Record<string, string> = { lunas: "Lunas", belum: "Belum", nihil: "Nihil" };
+    aktivitas.push({
+      id: `tx-${t.id}`,
+      waktu: waktu.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + ` ${waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`,
+      aksi: "SETOR",
+      label: labelStatus[t.status] ?? t.status,
+      jumlah: Number(t.jumlah_setor ?? 0),
+      warna: t.status === "lunas" ? "#22C55E" : t.status === "belum" ? "#EF4444" : "#9CA3AF",
+      detail: `${t.warga?.nama ?? "—"} · RT/RW ${t.warga?.no_rumah ?? "—"}`,
+    });
+  });
 
-const card = {
-  background: "var(--surf)", border: "1px solid var(--bdr)",
-  borderRadius: "var(--r)", boxShadow: "var(--shd)",
-};
+  // Kas masuk dari setoran jimpitan (transaksi_ref ada) + manual (transaksi_ref null)
+  (kasRes.data ?? []).filter((k: any) => k.jenis === "masuk").forEach((k: any) => {
+    const waktu = new Date(k.created_at);
+    aktivitas.push({
+      id: `kas-in-${k.id}`,
+      waktu: waktu.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + ` ${waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`,
+      aksi: "KAS MASUK",
+      label: k.transaksi_ref ? "Setoran Jimpitan" : "Manual",
+      jumlah: Number(k.jumlah ?? 0),
+      warna: "#22C55E",
+      detail: `${k.keterangan ?? "Kas masuk"}${k.transaksi_ref ? " (95% dari setoran)" : ""}`,
+    });
+  });
 
-function SectionCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
-  return (
-    <div style={card}>
-      <div style={{ padding: "16px 20px", borderBottom: "1px solid var(--bdr)" }}>
-        <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)" }}>{title}</p>
-        {sub && <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "2px" }}>{sub}</p>}
-      </div>
-      {children}
-    </div>
-  );
+  (kasRes.data ?? []).filter((k: any) => k.jenis === "keluar").forEach((k: any) => {
+    const waktu = new Date(k.created_at);
+    aktivitas.push({
+      id: `kas-out-${k.id}`,
+      waktu: waktu.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + ` ${waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`,
+      aksi: "KAS KELUAR",
+      label: "Penarikan",
+      jumlah: Number(k.jumlah ?? 0),
+      warna: "#EF4444",
+      detail: `${k.keterangan ?? "Penarikan"} · oleh ${k.disetujui_oleh ?? "Admin"}`,
+    });
+  });
+
+  (riwayatRes.data ?? []).filter((r: any) => r.tabel === "warga").forEach((r: any) => {
+    const waktu = new Date(r.created_at);
+    const baru = r.data_baru;
+    const lama = r.data_lama;
+    let detail = "";
+    let warna = "#8B5CF6";
+    if (r.aksi === "insert") {
+      detail = `Tambah warga: ${baru?.nama ?? "—"} · RT ${baru?.no_rumah ?? "—"}`;
+      warna = "#22C55E";
+    } else if (r.aksi === "update") {
+      const perubahan: string[] = [];
+      if (lama?.nama !== baru?.nama) perubahan.push(`nama "${lama?.nama ?? "-" } → "${baru?.nama ?? "-"}"`);
+      if (lama?.no_rumah !== baru?.no_rumah) perubahan.push(`RT "${lama?.no_rumah ?? "-" } → "${baru?.no_rumah ?? "-"}"`);
+      if (lama?.no_hp !== baru?.no_hp) perubahan.push(`WA "${lama?.no_hp ?? "-" } → "${baru?.no_hp ?? "-"}"`);
+      if (lama?.status_aktif !== baru?.status_aktif) perubahan.push(baru?.status_aktif === false ? "nonaktifkan" : "aktifkan");
+      if (perubahan.length > 0) {
+        detail = `Edit: ${perubahan.join(", ")}`;
+      } else {
+        detail = `Edit data warga: ${baru?.nama ?? "—"}`;
+      }
+    }
+    aktivitas.push({
+      id: `warga-${r.id}`,
+      waktu: waktu.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) + ` ${waktu.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}`,
+      aksi: "EDIT WARGA",
+      label: r.aksi === "insert" ? "Tambah" : baru?.status_aktif === false ? "Nonaktif" : "Edit",
+      warna,
+      detail,
+    });
+  });
+
+  aktivitas.sort((a, b) => new Date(b.waktu).getTime() - new Date(a.waktu).getTime());
+  return { saldo: Number(saldoRes.data?.saldo_kas_kegiatan ?? 0), aktivitas };
 }
 
 export default async function LaporanPage() {
-  const { saldoList, setoranList, totalKas, penarikanList } = await getLaporanData();
-
-  const totalTabungan = saldoList.reduce((s, n) => s + (n.saldo_aktif ?? 0), 0);
-  const totalSetoran = setoranList.reduce((s, t) => s + (t.total_nilai_bersih ?? 0), 0);
-
-  const summaryStats = [
-    { label: "Total Tabungan Warga", value: formatRupiah(totalTabungan), Icon: Landmark, color: "var(--acc)" },
-    { label: "Total Setoran Bersih", value: formatRupiah(totalSetoran), Icon: Recycle, color: "var(--p)" },
-    { label: "Total Kas Terkumpul", value: formatRupiah(totalKas), Icon: Briefcase, color: "#3b82f6" },
-  ];
+  const { saldo, aktivitas } = await getLaporanData();
+  const totalKeluar = aktivitas.filter(a => a.aksi === "KAS KELUAR").reduce((s, a) => s + (a.jumlah ?? 0), 0);
+  const totalMasuk = aktivitas.filter(a => a.aksi === "KAS MASUK").reduce((s, a) => s + (a.jumlah ?? 0), 0);
 
   return (
-    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+    <div style={{ padding: "20px 16px 60px", maxHeight: "100vh", overflowY: "auto" }} className="md:p-7 md:pb-20">
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.4px" }}>Laporan</h1>
-          <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "4px" }}>Ringkasan keuangan dan transaksi bank sampah</p>
+          <h1 style={{ fontFamily: "'Fraunces', serif", fontSize: "20px", fontWeight: 600, color: "var(--green)", margin: 0 }} className="md:text-2xl">Laporan &amp; Riwayat</h1>
+          <p style={{ fontSize: "11.5px", color: "var(--ink-soft)", marginTop: "4px" }} className="md:text-sm">Unduh &amp; transparan</p>
         </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px", marginBottom: "20px" }} className="md:grid-cols-3">
+        <div style={{ background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: "12px", padding: "14px 16px", borderLeft: "4px solid var(--green)" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-soft)", fontWeight: 600, marginBottom: "6px" }}>Saldo Kas</div>
+          <div style={{ fontSize: "18px", fontWeight: 700, color: "var(--green)", fontFamily: "'IBM Plex Mono', monospace" }}>{formatRupiah(saldo)}</div>
+        </div>
+        <div style={{ background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: "12px", padding: "14px 16px", borderLeft: "4px solid #22C55E" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-soft)", fontWeight: 600, marginBottom: "6px" }}>Kas Masuk</div>
+          <div style={{ fontSize: "18px", fontWeight: 700, color: "#22C55E", fontFamily: "'IBM Plex Mono', monospace" }}>{formatRupiah(totalMasuk)}</div>
+        </div>
+        <div style={{ background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: "12px", padding: "14px 16px", borderLeft: "4px solid #EF4444" }}>
+          <div style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-soft)", fontWeight: 600, marginBottom: "6px" }}>Kas Keluar</div>
+          <div style={{ fontSize: "18px", fontWeight: 700, color: "#EF4444", fontFamily: "'IBM Plex Mono', monospace" }}>{formatRupiah(totalKeluar)}</div>
+        </div>
+      </div>
+
+      <div style={{ background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: "12px", padding: "16px", marginBottom: "20px" }}>
+        <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "14px", fontWeight: 600, color: "var(--green)", margin: "0 0 12px" }}>📥 Ekspor Laporan PDF</h2>
         <ButtonDownloadLaporan />
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "12px" }}>
-        {summaryStats.map(({ label, value, Icon, color }) => (
-          <div key={label} style={{ ...card, padding: "18px 20px" }}>
-            <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "var(--p5)", display: "flex", alignItems: "center", justifyContent: "center", color, marginBottom: "12px" }}>
-              <Icon size={16} strokeWidth={2.5} />
-            </div>
-            <p style={{ fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)", marginBottom: "5px" }}>{label}</p>
-            <p style={{ fontSize: "22px", fontWeight: 800, color: "var(--text)", letterSpacing: "-0.5px" }}>{value}</p>
-          </div>
-        ))}
-      </div>
-
-      <SectionCard title="Saldo Tabungan per Nasabah" sub="Diurutkan dari saldo terbesar · Data real-time dari database">
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-            <thead>
-              <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
-                {["Kode", "Nama Nasabah", "Total Setoran", "Total Dicairkan", "Saldo Aktif", "Jml Setoran"].map((h, i) => (
-                  <th key={h} style={{ padding: "10px 16px", textAlign: i >= 2 ? "right" : "left", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)" }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {saldoList.map((n, i) => (
-                <tr key={n.id} style={{ borderBottom: i < saldoList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
-                  <td style={{ padding: "12px 16px" }}>
-                    <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--text3)" }}>{n.kode_nasabah}</span>
-                  </td>
-                  <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text)" }}>{n.nama_lengkap}</td>
-                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text2)" }}>{formatRupiah(n.total_setoran ?? 0)}</td>
-                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--red)" }}>{formatRupiah(n.total_dicairkan ?? 0)}</td>
-                  <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 700, color: "var(--p)" }}>{formatRupiah(n.saldo_aktif ?? 0)}</td>
-                  <td style={{ padding: "12px 16px", textAlign: "right", color: "var(--text3)" }}>{n.jumlah_transaksi}x</td>
-                </tr>
-              ))}
-              <tr style={{ background: "var(--acc2)" }}>
-                <td colSpan={4} style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "var(--text2)", fontSize: "12px" }}>Total Liabilities (wajib disiapkan)</td>
-                <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 800, color: "var(--acc)" }}>{formatRupiah(totalTabungan)}</td>
-                <td />
-              </tr>
-            </tbody>
-          </table>
+      <div style={{ background: "var(--paper-raised)", border: "1px solid var(--line)", borderRadius: "12px", overflow: "hidden" }}>
+        <div style={{ padding: "14px 16px", borderBottom: "1px solid var(--line)", background: "var(--surf2)" }}>
+          <h2 style={{ fontFamily: "'Fraunces', serif", fontSize: "14px", fontWeight: 600, color: "var(--green)", margin: 0 }}>📋 Riwayat Lengkap</h2>
+          <p style={{ fontSize: "11px", color: "var(--ink-soft)", margin: "2px 0 0" }}>Semua aktivitas — setor, tarik kas, edit warga, jam berapa</p>
         </div>
-      </SectionCard>
 
-      <SectionCard title="Riwayat Setoran" sub="50 setoran terbaru">
-        <RiwayatSetoranTable setoranList={setoranList} />
-      </SectionCard>
-
-      {penarikanList.length > 0 && (
-        <SectionCard title="Riwayat Pencairan Lebaran">
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
-              <thead>
-                <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
-                  {["Kode", "Nasabah", "Jumlah Dicairkan", "Periode", "Admin Saksi", "Tanggal"].map((h, i) => (
-                    <th key={h} style={{ padding: "10px 16px", textAlign: i === 2 || i === 5 ? "right" : "left", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.7px", color: "var(--text3)" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {penarikanList.map((p: any, i: number) => (
-                  <tr key={p.id} style={{ borderBottom: i < penarikanList.length - 1 ? "1px solid var(--bdr)" : "none" }}>
-                    <td style={{ padding: "11px 16px" }}>
-                      <span style={{ fontFamily: "monospace", fontSize: "11px", color: "var(--text3)" }}>{p.kode_penarikan}</span>
-                    </td>
-                    <td style={{ padding: "11px 16px", fontWeight: 600, color: "var(--text)" }}>{p.nasabah?.nama_lengkap ?? "—"}</td>
-                    <td style={{ padding: "11px 16px", textAlign: "right", fontWeight: 700, color: "var(--acc)" }}>{formatRupiah(p.jumlah_diterima)}</td>
-                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.periode_lebaran}</td>
-                    <td style={{ padding: "11px 16px", color: "var(--text2)" }}>{p.admin_saksi}</td>
-                    <td style={{ padding: "11px 16px", textAlign: "right", fontSize: "11px", color: "var(--text3)" }}>{formatTanggal(p.tanggal_pencairan)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {aktivitas.length === 0 ? (
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--ink-soft)", fontSize: "13px" }}>Belum ada aktivitas.</div>
+        ) : (
+          <div style={{ padding: "0 0 0 0" }}>
+            {aktivitas.map((item, i) => (
+              <div key={item.id} style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0",
+                padding: "12px 16px",
+                borderBottom: i < aktivitas.length - 1 ? "1px solid var(--line)" : "none",
+              }}>
+                <div style={{
+                  width: "36px", height: "36px", borderRadius: "50%", background: item.warna,
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginRight: "12px"
+                }}>
+                  <span style={{ fontSize: "16px" }}>
+                    {item.aksi === "SETOR" ? "💰" : item.aksi === "KAS MASUK" ? "📥" : item.aksi === "KAS KELUAR" ? "📤" : "✏️"}
+                  </span>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                    <span style={{
+                      fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "4px",
+                      background: `${item.warna}20`, color: item.warna, textTransform: "uppercase",
+                    }}>{item.aksi}</span>
+                    <span style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "4px", background: "var(--surf2)", color: "var(--ink-soft)" }}>{item.label}</span>
+                  </div>
+                  <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--ink)" }}>{item.detail}</div>
+                  <div style={{ fontSize: "11px", color: "var(--ink-soft)", fontFamily: "'IBM Plex Mono', monospace", marginTop: "2px" }}>🕐 {item.waktu}</div>
+                </div>
+                {item.jumlah !== undefined && item.aksi !== "EDIT WARGA" && (
+                  <div style={{
+                    background: `${item.warna}15`, border: `1px solid ${item.warna}40`,
+                    borderRadius: "8px", padding: "6px 12px", flexShrink: 0, textAlign: "right", marginLeft: "12px"
+                  }}>
+                    <div style={{ fontSize: "10px", color: item.warna, fontWeight: 600 }}>{item.aksi === "KAS KELUAR" ? "KELUAR" : "SETOR"}</div>
+                    <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 700, fontSize: "14px", color: item.warna }}>
+                      {item.aksi === "KAS KELUAR" ? "-" : "+"}Rp {Math.round(item.jumlah).toLocaleString("id-ID")}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        </SectionCard>
-      )}
+        )}
+      </div>
     </div>
   );
 }

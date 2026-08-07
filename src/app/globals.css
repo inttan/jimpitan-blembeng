@@ -2,63 +2,160 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --p:     #166534;
-  --p2:    #15803d;
-  --p3:    #22c55e;
-  --p4:    #86efac;
-  --p5:    #dcfce7;
-  --p6:    #f0fdf4;
-  --bg:    #f8faf8;
-  --surf:  #ffffff;
-  --surf2: #f4f7f4;
-  --surf3: #e8f0e8;
-  --text:  #0a1a0f;
-  --text2: #374151;
-  --text3: #6b7280;
-  --acc:   #d97706;
-  --acc2:  #fffbeb;
-  --red:   #dc2626;
-  --bdr:   rgba(22,101,52,0.09);
-  --shd:   0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(22,101,52,0.06);
-  --shd2:  0 8px 24px rgba(22,101,52,0.10);
-  --r:     12px;
-  --r2:    8px;
+  /* ── Warna: Earthy, Desaturated, Warm ── */
+  --paper:      #F6F3EA;   /* krem, bukan putih polos */
+  --paper-raised:#FDFCF7;  /* raised surface */
+  --ink:        #26241E;   /* hampir hitam, warm */
+  --ink-soft:   #5C584B;   /* deskriptif soft */
+  --green:      #1F3D2B;   /* forest green, bukan hijau terang */
+  --green-soft: #2E5540;   /* green variant */
+  --brass:      #B8863B;  /* kuningan, bukan kuning cerah */
+  --brass-soft: #E8D6AE;  /* brass highlight */
+  --red:        #A13D3D;  /* merah bata, bukan alarm red */
+  --terracotta: #C4622D;  /* soft terracotta/orange untuk warning */
+  --terracotta-soft: rgba(196,98,45,0.08);
+  --line:       #DDD6C4;  /* subtle separator */
+  --bg:         var(--paper);
+  --surf:       var(--paper-raised);
+  --surf2:      #F0EDE2;
+  --surf3:      #E8E3D6;
+  --text:       var(--ink);
+  --text2:      var(--ink-soft);
+  --text3:      #8C8778;
+  --acc:        var(--brass);
+  --acc2:       #FBF6EA;
+  --bdr:        rgba(38,36,30,0.09);
+  --bdr-strong: rgba(38,36,30,0.15);
+  --shd:        0 1px 2px rgba(38,36,30,0.06), 0 4px 14px rgba(38,36,30,0.05);
+  --shd2:       0 4px 16px rgba(38,36,30,0.08), 0 8px 32px rgba(38,36,30,0.06);
+  --shd-card:   0 1px 2px rgba(38,36,30,0.05), 0 6px 20px rgba(38,36,30,0.06);
+  --r:          12px;
+  --r2:         8px;
+  --p:          var(--green);
+  --p2:         var(--green-soft);
+  --p3:         #4A7C59;
+  --p4:         #7AAB8A;
+  --p5:         #D1E8D5;
+  --p6:         #EEF6EE;
 }
 
 .dark {
-  --p:     #4ade80;
-  --p2:    #22c55e;
-  --p3:    #86efac;
-  --p4:    #166534;
-  --p5:    #14532d;
-  --p6:    #052e16;
-  --bg:    #030f07;
-  --surf:  #0a1a0f;
-  --surf2: #111f16;
-  --surf3: #1a2f1f;
-  --text:  #f0fdf4;
-  --text2: #bbf7d0;
-  --text3: #4b7a5a;
-  --acc:   #fbbf24;
-  --acc2:  #1c1000;
-  --red:   #f87171;
-  --bdr:   rgba(74,222,128,0.10);
-  --shd:   0 1px 2px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.25);
-  --shd2:  0 8px 24px rgba(0,0,0,0.4);
+  --paper:      #1A1A15;
+  --paper-raised:#242320;
+  --ink:        #E8E4D8;
+  --ink-soft:   #B8B3A5;
+  --green:      #6DBF8A;
+  --green-soft: #4A9E6E;
+  --brass:      #C9943E;
+  --brass-soft: #8A6428;
+  --red:        #D97070;
+  --terracotta: #E88B5A;  /* soft terracotta/orange untuk warning (dark) */
+  --terracotta-soft: rgba(232,139,90,0.12);
+  --line:       #3A3830;
+  --bg:         var(--paper);
+  --surf:       var(--paper-raised);
+  --surf2:      #2E2C26;
+  --surf3:      #3A3830;
+  --text:       var(--ink);
+  --text2:      var(--ink-soft);
+  --text3:      #7A7568;
+  --acc:        var(--brass);
+  --acc2:       #2A2418;
+  --bdr:        rgba(232,228,216,0.08);
+  --bdr-strong: rgba(232,228,216,0.14);
+  --shd:        0 1px 2px rgba(0,0,0,0.2), 0 4px 14px rgba(0,0,0,0.15);
+  --shd2:       0 4px 16px rgba(0,0,0,0.25), 0 8px 32px rgba(0,0,0,0.20);
+  --shd-card:   0 1px 2px rgba(0,0,0,0.15), 0 6px 20px rgba(0,0,0,0.18);
+  --p:          var(--green);
+  --p2:         var(--green-soft);
+  --p3:         #7AAB8A;
+  --p4:         #4A7C59;
+  --p5:         #1E3A25;
+  --p6:         #141E16;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-public-sans), 'Public Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
   color: var(--text);
   transition: background 0.25s, color 0.25s;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  position: relative;
 }
 
-::-webkit-scrollbar { width: 4px; height: 4px; }
+/* ── Noise texture overlay ── */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--bdr); border-radius: 99px; }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text3); }
 ::selection { background: var(--p5); color: var(--p); }
+
+/* ── Font helpers — pakai next/font CSS variables ── */
+.num {
+  font-family: var(--font-mono), 'IBM Plex Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.display {
+  font-family: var(--font-fraunces), 'Fraunces', Georgia, serif;
+}
+
+/* ── Animasi halus ── */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeSlideIn 0.3s ease-out;
+}
+
+/* ── Hover card lift ── */
+.card-lift {
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shd2);
+}
+
+/* ── Hero Section Animations ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.12; transform: scale(1); }
+  50% { opacity: 0.2; transform: scale(1.05); }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.8s ease-out both;
+}
+
+.animate-fade-in-down {
+  animation: fadeInDown 0.8s ease-out both;
+}
+
+.animate-glow-pulse {
+  animation: glowPulse 4s ease-in-out infinite;
+}

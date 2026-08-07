@@ -2,18 +2,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useLang } from "@/components/providers/LangProvider";
-import {
-  LayoutDashboard, Users, Recycle,
-  Tag, Banknote, BarChart2, Lightbulb,
-} from "lucide-react";
 
 const navItems = [
-  { href: "/",          labelKey: "dashboard" as const, Icon: LayoutDashboard },
-  { href: "/nasabah",   labelKey: "nasabah"   as const, Icon: Users           },
-  { href: "/transaksi", labelKey: "setoran"   as const, Icon: Recycle         },
-  { href: "/harga",     labelKey: "harga"     as const, Icon: Tag             },
-  { href: "/penarikan", labelKey: "penarikan" as const, Icon: Banknote        },
-  { href: "/laporan",   labelKey: "laporan"   as const, Icon: BarChart2       },
+  { href: "/jimpitan",   labelKey: "dashboard" as const, icon: "◆" },
+  { href: "/transaksi",  labelKey: "setoran"   as const, icon: "▤" },
+  { href: "/warga",      labelKey: "warga"     as const, icon: "◍" },
+  { href: "/kas",        labelKey: "kas"       as const, icon: "⬒" },
+  { href: "/laporan",    labelKey: "laporan"   as const, icon: "▥" },
 ];
 
 export default function Sidebar() {
@@ -22,81 +17,128 @@ export default function Sidebar() {
 
   return (
     <aside style={{
-      width: "224px", flexShrink: 0,
-      background: "var(--surf)",
-      borderRight: "1px solid var(--bdr)",
-      height: "100vh", display: "flex", flexDirection: "column",
-      transition: "background 0.25s",
+      width: "220px",
+      flexShrink: 0,
+      background: "linear-gradient(180deg, #1F3D2B 0%, #142A1D 100%)",
+      color: "#EDE7D6",
+      padding: "22px 16px",
+      display: "flex",
+      flexDirection: "column",
+      height: "100vh",
     }}>
-      {/* Logo */}
+      {/* Brand */}
       <div style={{
-        padding: "20px 18px 18px",
-        borderBottom: "1px solid var(--bdr)",
-        display: "flex", alignItems: "center", gap: "10px",
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: "0 6px 22px",
+        borderBottom: "1px solid rgba(237,231,214,0.12)",
+        marginBottom: "18px",
       }}>
+        {/* Coin logo dengan radial glow + shine */}
         <div style={{
-          width: "36px", height: "36px", borderRadius: "10px",
-          background: "var(--p)", display: "flex",
-          alignItems: "center", justifyContent: "center", flexShrink: 0,
+          width: "34px",
+          height: "34px",
+          borderRadius: "50%",
+          background: "radial-gradient(circle at 35% 30%, #F0D98A 0%, #C9943E 30%, #8A6428 60%, #B8863B 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 12px rgba(184,134,59,0.5), 0 2px 6px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3)",
+          flexShrink: 0,
+          position: "relative",
         }}>
-          <Recycle size={18} color="#fff" strokeWidth={2.5} />
+          {/* Shine highlight */}
+          <div style={{
+            position: "absolute",
+            top: "4px",
+            left: "6px",
+            width: "10px",
+            height: "6px",
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.45)",
+            filter: "blur(2px)",
+          }} />
+          <span style={{
+            fontFamily: "'Fraunces', serif",
+            fontWeight: 700,
+            fontSize: "13px",
+            color: "#1F3D2B",
+            lineHeight: 1,
+            position: "relative",
+            zIndex: 1,
+            textShadow: "0 0 4px rgba(255,255,255,0.3)",
+          }}>Rp</span>
         </div>
         <div>
-          <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.2px" }}>
-            Bank Sampah
-          </p>
-          <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "1px" }}>
-            Desa Kebonagung
-          </p>
+          <div style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: "15px",
+            fontWeight: 600,
+            lineHeight: 1.1,
+            color: "#EDE7D6",
+          }}>Jimpitan</div>
+          <div style={{ fontSize: "11px", color: "#9DAE9C" }}>Dusun Blembeng</div>
         </div>
       </div>
 
-      {/* Nav */}
-      <nav style={{ flex: 1, padding: "10px 10px", overflowY: "auto" }}>
-        <p style={{
-          fontSize: "10px", fontWeight: 600, color: "var(--text3)",
-          textTransform: "uppercase", letterSpacing: "0.8px",
-          padding: "8px 8px 6px", marginBottom: "2px",
-        }}>Menu Utama</p>
-
-        {navItems.map(({ href, labelKey, Icon }) => {
-          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+      {/* Navigation */}
+      <nav style={{ display: "flex", flexDirection: "column", gap: "2px", flex: 1 }}>
+        {navItems.map(({ href, labelKey, icon }) => {
+          const isActive = href === "/jimpitan" ? pathname === "/jimpitan" : pathname.startsWith(href);
           return (
-            <Link key={href} href={href} style={{
-              display: "flex", alignItems: "center", gap: "9px",
-              padding: "8px 10px", borderRadius: "8px", marginBottom: "1px",
-              fontSize: "13px", fontWeight: isActive ? 600 : 500,
-              color: isActive ? "var(--p)" : "var(--text3)",
-              background: isActive ? "var(--p5)" : "transparent",
-              textDecoration: "none", transition: "all 0.15s",
-            }}>
-              <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+            <Link
+              key={href}
+              href={href}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "10px 12px",
+                borderRadius: "8px",
+                fontSize: "13.5px",
+                fontWeight: isActive ? 600 : 500,
+                color: isActive ? "#F6F3EA" : "#D9D3C0",
+                background: isActive ? "#B8863B" : "transparent",
+                textDecoration: "none",
+                fontFamily: "'Public Sans', sans-serif",
+                transition: "background 0.15s, color 0.15s",
+              }}
+              onMouseEnter={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = "rgba(237,231,214,0.08)";
+                  (e.currentTarget as HTMLElement).style.color = "#fff";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isActive) {
+                  (e.currentTarget as HTMLElement).style.background = "transparent";
+                  (e.currentTarget as HTMLElement).style.color = "#D9D3C0";
+                }
+              }}
+            >
+              <span style={{ width: "16px", textAlign: "center", opacity: isActive ? 1 : 0.85 }}>
+                {icon}
+              </span>
               {t[labelKey]}
-              {isActive && (
-                <div style={{
-                  marginLeft: "auto", width: "5px", height: "5px",
-                  borderRadius: "50%", background: "var(--p)",
-                }} />
-              )}
             </Link>
           );
         })}
       </nav>
 
-      {/* Tip */}
-      <div style={{ padding: "12px", borderTop: "1px solid var(--bdr)" }}>
-        <div style={{
-          background: "var(--p6)", borderRadius: "8px",
-          padding: "10px 12px", border: "1px solid var(--bdr)",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "5px" }}>
-            <Lightbulb size={13} color="var(--p)" strokeWidth={2.5} />
-            <p style={{ fontSize: "11px", fontWeight: 600, color: "var(--p)" }}>{t.panduan}</p>
-          </div>
-          <p style={{ fontSize: "11px", color: "var(--text3)", lineHeight: 1.5 }}>
-            {t.panduanText}
-          </p>
-        </div>
+      {/* Footer */}
+      <div style={{
+        fontSize: "12px",
+        color: "#9DAE9C",
+        padding: "14px 6px 0",
+        borderTop: "1px solid rgba(237,231,214,0.10)",
+        marginTop: "12px",
+        fontFamily: "'Public Sans', sans-serif",
+        lineHeight: 1.5,
+        wordBreak: "break-word",
+      }}>
+        Masuk sebagai<br />
+        <b style={{ color: "#EDE7D6", fontWeight: 600, fontSize: "13px" }}>Kadus Blembeng</b>
       </div>
     </aside>
   );

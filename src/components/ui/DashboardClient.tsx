@@ -1,374 +1,564 @@
 "use client";
 import Link from "next/link";
-import { useLang } from "@/components/providers/LangProvider";
 import { formatRupiah, formatTanggalPendek } from "@/lib/utils";
-import {
-  ChartSetoranBulanan,
-  ChartKomposisiSampah,
-  ChartAkumulasiTabungan,
-} from "@/components/ui/Charts";
-import {
-  Landmark, Briefcase, Recycle, Users,
-  ClipboardList, TrendingUp, BarChart2,
-  AlertTriangle, ArrowRight, Plus,
-} from "lucide-react";
+import { NOMINAL_STANDAR } from "@/lib/jimpitan";
+import { useState, useRef } from "react";
 
 interface DashboardData {
-  metrics: any;
-  nasabahStats: any;
-  transaksiTerbaru: any[];
-  chartBulanan: any[];
-  chartKomposisi: any[];
+  saldoKas: number;
+  saldoKasPrev: number;
+  belumSetor: { id: string; nama: string; no_hp: string | null; no_rumah: string | null }[];
+  totalUpahBelum: number;
+  wargaAktif: number;
+  totalWarga: number;
+  lunasMingguIni: number;
+  totalSetorMingguIni: number;
+  transaksiTerbaru: {
+    id: string;
+    status: string;
+    potongan_kas: number;
+    dana_kegiatan: number;
+    minggu_ke: string;
+    warga: { nama: string } | null;
+    jumlah_setor: number;
+  }[];
+  chartBulanan: { bulan: string; nilai: number; keluar?: number }[];
+  chartAkumulasi: { bulan: string; akumulasi: number }[];
+  mingguIni: string;
+  formatPeriode: string;
 }
 
-/* ─── Stat Card ─── */
-const KPI_ICONS = [Landmark, Briefcase, Recycle, Users];
-
-function StatCard({ label, value, sub, iconIndex = 0, accent = false }: {
-  label: string; value: string; sub?: string;
-  iconIndex?: number; accent?: boolean;
-}) {
-  const Icon = KPI_ICONS[iconIndex];
+/** ── Hero Card: Saldo Kas ── */
+function HeroSaldoCard({ value, delta }: { value: string; delta: string }) {
   return (
     <div style={{
-      background: accent ? "var(--p)" : "var(--surf)",
-      border: `1px solid ${accent ? "transparent" : "var(--bdr)"}`,
-      borderRadius: "var(--r)", padding: "18px 20px",
-      boxShadow: accent ? "0 4px 20px rgba(22,101,52,0.25)" : "var(--shd)",
-      transition: "all 0.2s", position: "relative", overflow: "hidden",
+      borderRadius: "12px",
+      padding: "20px 22px",
+      position: "relative",
+      overflow: "hidden",
+      boxShadow: "0 2px 6px rgba(38,36,30,0.08), 0 8px 24px rgba(38,36,30,0.07)",
+      background: "var(--paper-raised)",
+      border: "1px solid var(--line)",
+      transition: "transform 0.2s ease, box-shadow 0.2s ease",
+      cursor: "default",
+    }}
+    onMouseEnter={(e) => {
+      (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+      (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(38,36,30,0.12), 0 16px 40px rgba(38,36,30,0.10)";
+    }}
+    onMouseLeave={(e) => {
+      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+      (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 6px rgba(38,36,30,0.08), 0 8px 24px rgba(38,36,30,0.07)";
     }}>
-      {/* bg circle deco */}
+      {/* Accent bar di kiri */}
       <div style={{
-        position: "absolute", bottom: "-24px", right: "-24px",
-        width: "88px", height: "88px", borderRadius: "50%",
-        background: accent ? "rgba(255,255,255,0.06)" : "var(--p6)",
-        pointerEvents: "none",
+        position: "absolute",
+        left: 0, top: 0, bottom: 0,
+        width: "4px",
+        background: "var(--green)",
+        borderRadius: "12px 0 0 12px",
       }} />
-      {/* icon */}
+
+      {/* Coin icon - lebih kecil & flat */}
       <div style={{
-        width: "34px", height: "34px", borderRadius: "9px",
-        background: accent ? "rgba(255,255,255,0.15)" : "var(--p5)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        marginBottom: "14px",
-        color: accent ? "#fff" : "var(--p)",
+        position: "absolute",
+        top: "16px",
+        right: "18px",
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        background: "var(--brass)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: 0.7,
+        zIndex: 1,
       }}>
-        <Icon size={16} strokeWidth={2.5} />
+        <span style={{
+          fontFamily: "'Fraunces', serif",
+          fontWeight: 700,
+          fontSize: "12px",
+          color: "#F6F3EA",
+          lineHeight: 1,
+          position: "relative",
+          zIndex: 1,
+        }}>Rp</span>
       </div>
-      <p style={{
-        fontSize: "10px", fontWeight: 600, letterSpacing: "0.7px",
+
+      <div style={{
+        fontSize: "11px",
         textTransform: "uppercase",
-        color: accent ? "rgba(255,255,255,0.6)" : "var(--text3)",
-        marginBottom: "5px",
-      }}>{label}</p>
-      <p style={{
-        fontSize: "22px", fontWeight: 800, letterSpacing: "-0.5px",
-        color: accent ? "#fff" : "var(--text)", lineHeight: 1,
-      }}>{value}</p>
+        letterSpacing: "0.07em",
+        color: "var(--ink-soft)",
+        fontWeight: 600,
+        marginBottom: "10px",
+        fontFamily: "'Public Sans', sans-serif",
+      }}>Saldo Kas Kegiatan</div>
+
+      {/* Angka utama - lebih besar & hijau tua */}
+      <div style={{
+        fontSize: "32px",
+        fontWeight: 700,
+        color: "var(--green)",
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.5px",
+        lineHeight: 1,
+        marginBottom: "8px",
+      }}>{value}</div>
+
+      <div style={{
+        fontSize: "11.5px",
+        color: delta.startsWith("↑")
+          ? "var(--green)"
+          : delta.startsWith("↓")
+          ? "var(--terracotta)"
+          : "var(--ink-soft)",
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontWeight: 500,
+      }}>{delta}</div>
+    </div>
+  );
+}
+
+/** ── KPI Card ── */
+function KpiCard({
+  label, value, sub, warn = false,
+}: {
+  label: string; value: string; sub?: string; warn?: boolean;
+}) {
+  return (
+    <div style={{
+      background: "var(--paper-raised)",
+      border: "1px solid var(--line)",
+      borderRadius: "12px",
+      padding: "18px 20px",
+      boxShadow: "0 2px 6px rgba(38,36,30,0.08), 0 8px 24px rgba(38,36,30,0.07)",
+      position: "relative",
+      overflow: "hidden",
+      transition: "transform 0.18s ease, box-shadow 0.18s ease",
+      cursor: "default",
+    }}
+    onMouseEnter={(e) => {
+      (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+      (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(38,36,30,0.12), 0 16px 40px rgba(38,36,30,0.10)";
+    }}
+    onMouseLeave={(e) => {
+      (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+      (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 6px rgba(38,36,30,0.08), 0 8px 24px rgba(38,36,30,0.07)";
+    }}>
+      <div style={{
+        position: "absolute",
+        left: 0, top: 0, bottom: 0,
+        width: "4px",
+        background: warn ? "var(--terracotta)" : "var(--brass)",
+        borderRadius: "12px 0 0 12px",
+      }} />
+      <div style={{
+        fontSize: "11px",
+        textTransform: "uppercase",
+        letterSpacing: "0.06em",
+        color: "var(--ink-soft)",
+        fontWeight: 600,
+        marginBottom: "8px",
+        fontFamily: "'Public Sans', sans-serif",
+      }}>{label}</div>
+      <div style={{
+        fontSize: "22px",
+        fontWeight: 600,
+        color: warn ? "var(--terracotta)" : "var(--green)",
+        fontFamily: "'IBM Plex Mono', monospace",
+        fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.5px",
+      }}>{value}</div>
       {sub && (
-        <p style={{
-          fontSize: "11px", marginTop: "6px",
-          color: accent ? "rgba(255,255,255,0.55)" : "var(--text3)",
-        }}>{sub}</p>
+        <div style={{ fontSize: "11px", color: "var(--ink-soft)", marginTop: "5px" }}>
+          {sub}
+        </div>
       )}
     </div>
   );
 }
 
-/* ─── Card wrapper ─── */
-function Card({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
-  return (
-    <div style={{
-      background: "var(--surf)", border: "1px solid var(--bdr)",
-      borderRadius: "var(--r)", boxShadow: "var(--shd)",
-      transition: "background 0.25s", ...style,
-    }}>
-      {children}
-    </div>
-  );
-}
-
-/* ─── Card Header ─── */
-function CardHeader({ title, sub, action }: {
-  title: string; sub?: string; action?: React.ReactNode;
-}) {
-  return (
-    <div style={{
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      padding: "16px 20px", borderBottom: "1px solid var(--bdr)",
-    }}>
-      <div>
-        <p style={{ fontSize: "14px", fontWeight: 700, color: "var(--text)", letterSpacing: "-0.1px" }}>
-          {title}
-        </p>
-        {sub && (
-          <p style={{ fontSize: "11px", color: "var(--text3)", marginTop: "2px" }}>{sub}</p>
-        )}
+/** ── Bar Chart ── */
+function ChartBars({ data }: { data: { bulan: string; nilai: number }[] }) {
+  if (!data.length || data.every(d => d.nilai === 0)) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--ink-soft)", fontSize: "13px" }}>
+        Belum ada data tren
       </div>
-      {action}
-    </div>
-  );
-}
+    );
+  }
+  const max = Math.max(...data.map(d => d.nilai));
+  const tinggi = 100;
 
-/* ─── Empty State ─── */
-function Empty({ Icon, text }: { Icon: React.ElementType; text: string }) {
   return (
     <div style={{
-      height: "180px", display: "flex", flexDirection: "column",
-      alignItems: "center", justifyContent: "center", gap: "10px",
+      display: "flex",
+      alignItems: "flex-end",
+      gap: "8px",
+      height: `${tinggi + 24}px`,
+      paddingTop: "8px",
     }}>
-      <div style={{
-        width: "48px", height: "48px", borderRadius: "14px",
-        background: "var(--surf3)", display: "flex",
-        alignItems: "center", justifyContent: "center",
-        color: "var(--text3)",
-      }}>
-        <Icon size={22} strokeWidth={1.5} />
-      </div>
-      <p style={{ fontSize: "12px", color: "var(--text3)" }}>{text}</p>
-    </div>
-  );
-}
-
-/* ─── Main ─── */
-export default function DashboardClient({
-  metrics, nasabahStats, transaksiTerbaru, chartBulanan, chartKomposisi,
-}: DashboardData) {
-  const { t, lang } = useLang();
-
-  const totalNasabahSub = t.totalNasabah.replace("{n}", String(nasabahStats?.total_nasabah ?? 0));
-
-  return (
-    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: "16px" }}>
-
-      {/* ── Hero ── */}
-      <Card style={{ padding: "20px 24px" }}>
-        <div style={{
-          display: "flex", alignItems: "center",
-          justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+      {data.map((d, i) => {
+        const h = max > 0 ? Math.round((d.nilai / max) * tinggi) : 0;
+        const isLast = i === data.length - 1;
+        return (
+          <div key={d.bulan} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "4px" }}>
             <div style={{
-              width: "46px", height: "46px", borderRadius: "13px",
-              background: "var(--p5)", display: "flex",
-              alignItems: "center", justifyContent: "center",
-              color: "var(--p)",
-            }}>
-              <Recycle size={22} strokeWidth={2.5} />
-            </div>
-            <div>
-              <h1 style={{
-                fontSize: "18px", fontWeight: 800, color: "var(--text)",
-                letterSpacing: "-0.3px", display: "flex", alignItems: "center", gap: "6px",
-              }}>
-                {t.greetTitle}
-                <span style={{ fontSize: "16px" }}>👋</span>
-              </h1>
-              <p style={{ fontSize: "12px", color: "var(--text3)", marginTop: "3px" }}>
-                {t.greetSub}
-              </p>
-            </div>
+              width: "100%",
+              height: `${h}px`,
+              minHeight: h > 0 ? "4px" : "0",
+              background: isLast
+                ? "linear-gradient(180deg, var(--brass), var(--brass-soft))"
+                : "linear-gradient(180deg, rgba(184,134,59,0.55), rgba(184,134,59,0.28))",
+              borderRadius: "4px 4px 2px 2px",
+              boxShadow: isLast ? "0 2px 6px rgba(184,134,59,0.25)" : "none",
+            }} />
+            <div style={{ fontSize: "10px", color: "var(--ink-soft)" }}>{d.bulan}</div>
           </div>
-          <Link href="/transaksi" style={{
-            display: "inline-flex", alignItems: "center", gap: "6px",
-            background: "var(--p)", color: "#fff",
-            borderRadius: "9px", padding: "10px 18px",
-            fontSize: "13px", fontWeight: 700, textDecoration: "none",
-            boxShadow: "0 4px 14px rgba(22,101,52,0.28)",
-            transition: "opacity 0.2s",
-          }}>
-            <Plus size={15} strokeWidth={2.5} />
-            {t.btnCatat}
-          </Link>
-        </div>
-      </Card>
+        );
+      })}
+    </div>
+  );
+}
 
-      {/* ── KPI Grid ── */}
+/** ── Progress Bar ── */
+function ProgressBar({ done, total }: { done: number; total: number }) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  return (
+    <div>
       <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(155px, 1fr))",
+        display: "flex",
+        justifyContent: "space-between",
+        fontSize: "12px",
+        color: "var(--ink-soft)",
+        marginBottom: "8px",
+      }}>
+        <span>{done} / {total} KK sudah setor</span>
+        <span style={{ fontFamily: "'IBM Plex Mono', monospace", fontWeight: 600, color: "var(--green)" }}>{pct}%</span>
+      </div>
+      <div style={{
+        height: "14px",
+        background: "var(--surf3)",
+        borderRadius: "99px",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          height: "100%",
+          width: `${pct}%`,
+          background: pct === 100
+            ? "var(--green)"
+            : "linear-gradient(90deg, var(--green), var(--brass))",
+          borderRadius: "99px",
+          transition: "width 0.5s ease",
+        }} />
+      </div>
+    </div>
+  );
+}
+
+/** ── Avatar ── */
+function Avatar({ nama }: { nama: string }) {
+  const initials = nama.split(" ").map(x => x[0]).slice(0, 2).join("").toUpperCase();
+  return (
+    <div style={{
+      width: "28px", height: "28px", borderRadius: "50%",
+      background: "var(--brass-soft)", color: "var(--green)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      fontSize: "11px", fontWeight: 700,
+      fontFamily: "'Fraunces', serif",
+      flexShrink: 0,
+    }}>{initials}</div>
+  );
+}
+
+/** ── Stamp Badge ── */
+function Stamp({ status }: { status: string }) {
+  return (
+    <span style={{
+      display: "inline-flex",
+      alignItems: "center",
+      fontFamily: "'Fraunces', serif",
+      fontWeight: 700,
+      fontSize: "10.5px",
+      letterSpacing: "0.04em",
+      padding: "4px 10px",
+      borderRadius: "20px",
+      border: "1.5px solid",
+      transform: "rotate(-2deg)",
+      textTransform: "uppercase",
+      ...(status === "lunas" ? {
+        color: "var(--green)", borderColor: "var(--green)", background: "rgba(31,61,43,0.06)",
+      } : status === "belum" ? {
+        color: "var(--terracotta)", borderColor: "var(--terracotta)", background: "var(--terracotta-soft)",
+      } : {
+        color: "var(--ink-soft)", borderColor: "var(--ink-soft)", background: "rgba(92,88,75,0.06)",
+      }),
+    }}>
+      {status === "lunas" ? "Lunas" : status === "belum" ? "Belum" : "Nihil"}
+    </span>
+  );
+}
+
+export default function DashboardClient(props: DashboardData) {
+  const {
+    saldoKas, saldoKasPrev, belumSetor, totalUpahBelum, wargaAktif, totalWarga,
+    lunasMingguIni, totalSetorMingguIni, transaksiTerbaru, chartBulanan, chartAkumulasi,
+    mingguIni, formatPeriode,
+  } = props;
+
+  const delta = saldoKas - saldoKasPrev;
+  const deltaStr = delta >= 0
+    ? `↑ ${formatRupiah(delta)} dari minggu lalu`
+    : `↓ ${formatRupiah(Math.abs(delta))} dari minggu lalu`;
+
+  const belumCount = belumSetor.length;
+  const lunasCount = wargaAktif - belumCount;
+
+  return (
+    <div style={{ padding: "28px 34px 50px", maxHeight: "100vh", overflowY: "auto" }}>
+
+      {/* ── Topbar ── */}
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "flex-end",
+        marginBottom: "26px",
+        flexWrap: "wrap",
         gap: "12px",
       }}>
-        <StatCard accent iconIndex={0} label={t.kpi1Label}
-          value={formatRupiah(metrics?.total_liabilities ?? 0)} sub={t.kpi1Sub} />
-        <StatCard iconIndex={1} label={t.kpi2Label}
-          value={formatRupiah(metrics?.total_kas_terkumpul ?? 0)} sub={t.kpi2Sub} />
-        <StatCard iconIndex={2} label={t.kpi3Label}
-          value={`${(metrics?.total_sampah_kg ?? 0).toFixed(1)} kg`} sub={t.kpi3Sub} />
-        <StatCard iconIndex={3} label={t.kpi4Label}
-          value={String(nasabahStats?.nasabah_aktif ?? 0)} sub={totalNasabahSub} />
-      </div>
-
-      {/* ── Secondary Stats ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-        <Card style={{ padding: "16px 20px" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px",
-          }}>
-            <div style={{
-              width: "28px", height: "28px", borderRadius: "7px",
-              background: "var(--p5)", display: "flex",
-              alignItems: "center", justifyContent: "center", color: "var(--p)",
-            }}>
-              <ClipboardList size={14} strokeWidth={2.5} />
-            </div>
-            <p style={{
-              fontSize: "10px", fontWeight: 600, textTransform: "uppercase",
-              letterSpacing: "0.7px", color: "var(--text3)",
-            }}>{t.statTxnLabel}</p>
+        <div>
+          <h1 style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: "24px",
+            fontWeight: 600,
+            color: "var(--green)",
+            margin: 0,
+            lineHeight: 1.1,
+          }}>Dashboard</h1>
+          <div style={{ fontSize: "12.5px", color: "var(--ink-soft)", marginTop: "3px" }}>
+            Ringkasan minggu berjalan — {formatPeriode}
           </div>
-          <p style={{
-            fontSize: "38px", fontWeight: 800, color: "var(--text)",
-            lineHeight: 1, letterSpacing: "-1px", margin: "0 0 4px",
-          }}>
-            {metrics?.transaksi_hari_ini ?? 0}
-          </p>
-          <p style={{ fontSize: "11px", color: "var(--text3)" }}>{t.statTxnSub}</p>
-        </Card>
-
-        <Card style={{ padding: "16px 20px" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px",
-          }}>
-            <div style={{
-              width: "28px", height: "28px", borderRadius: "7px",
-              background: "var(--p5)", display: "flex",
-              alignItems: "center", justifyContent: "center", color: "var(--p)",
-            }}>
-              <TrendingUp size={14} strokeWidth={2.5} />
-            </div>
-            <p style={{
-              fontSize: "10px", fontWeight: 600, textTransform: "uppercase",
-              letterSpacing: "0.7px", color: "var(--text3)",
-            }}>{t.statAvgLabel}</p>
-          </div>
-          <p style={{
-            fontSize: "26px", fontWeight: 800, color: "var(--text)",
-            lineHeight: 1, letterSpacing: "-0.5px", margin: "0 0 4px",
-          }}>
-            {formatRupiah(metrics?.rata_rata_setoran ?? 0)}
-          </p>
-          <p style={{ fontSize: "11px", color: "var(--text3)" }}>{t.statAvgSub}</p>
-        </Card>
-      </div>
-
-      {/* ── Charts Row ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "12px" }}>
-        <Card>
-          <CardHeader title={t.chart1Title} sub={t.chart1Sub} />
-          <div style={{ padding: "16px 20px" }}>
-            {chartBulanan.some(d => d.nilai > 0)
-              ? <ChartSetoranBulanan data={chartBulanan} />
-              : <Empty Icon={BarChart2} text={t.emptyChart} />}
-          </div>
-        </Card>
-
-        <Card>
-          <CardHeader title={t.chart2Title} sub={t.chart2Sub} />
-          <div style={{ padding: "16px 20px" }}>
-            {chartKomposisi.length > 0
-              ? <ChartKomposisiSampah data={chartKomposisi} />
-              : <Empty Icon={Recycle} text={t.emptyPie} />}
-          </div>
-        </Card>
-      </div>
-
-      {/* ── Area Chart ── */}
-      <Card>
-        <CardHeader title={t.chart3Title} sub={t.chart3Sub} />
-        <div style={{ padding: "16px 20px" }}>
-          {chartBulanan.some(d => d.akumulasi > 0)
-            ? <ChartAkumulasiTabungan data={chartBulanan} />
-            : <Empty Icon={TrendingUp} text={t.emptyAcc} />}
         </div>
-      </Card>
+        <div style={{
+          background: "var(--paper-raised)",
+          border: "1px solid var(--line)",
+          borderRadius: "20px",
+          padding: "6px 14px",
+          fontSize: "12.5px",
+          color: "var(--ink-soft)",
+          fontWeight: 500,
+          boxShadow: "var(--shd)",
+        }}>
+          Minggu ke-{mingguIni}
+        </div>
+      </div>
+
+      {/* ── KPI Row ── */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1.4fr 1fr",
+        gap: "16px",
+        marginBottom: "32px",
+        alignItems: "stretch",
+      }}>
+        <HeroSaldoCard value={formatRupiah(saldoKas)} delta={deltaStr} />
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <KpiCard
+            label="Belum Setor Minggu Ini"
+            value={`${belumCount} KK`}
+            warn={belumCount > 0}
+            sub={`${lunasCount} dari ${wargaAktif} warga aktif`}
+          />
+          <KpiCard
+            label="Transaksi Minggu Ini"
+            value={`${lunasMingguIni} setoran`}
+            sub={`Total: ${formatRupiah(totalSetorMingguIni)}`}
+          />
+        </div>
+      </div>
+
+      {/* ── Progress Setoran ── */}
+      <div style={{
+        background: "var(--paper-raised)",
+        border: "1px solid var(--line)",
+        borderRadius: "12px",
+        padding: "16px 20px",
+        boxShadow: "var(--shd)",
+        marginBottom: "20px",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
+          <h2 style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: "15.5px",
+            fontWeight: 600,
+            color: "var(--green)",
+            margin: 0,
+          }}>Progress Setoran Minggu Ini</h2>
+          <Link href="/transaksi" style={{
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "var(--brass)",
+            textDecoration: "none",
+          }}>Lihat detail →</Link>
+        </div>
+        <ProgressBar done={lunasCount} total={wargaAktif} />
+      </div>
+
+      {/* ── Belum Setor ── */}
+      {belumCount > 0 && (
+        <div style={{
+          background: "var(--paper-raised)",
+          border: "1px solid var(--line)",
+          borderRadius: "12px",
+          padding: "16px 20px",
+          boxShadow: "var(--shd)",
+          marginBottom: "20px",
+        }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px" }}>
+            <h2 style={{
+              fontFamily: "'Fraunces', serif",
+              fontSize: "15.5px",
+              fontWeight: 600,
+              color: "var(--terracotta)",
+              margin: 0,
+            }}>Belum Setor Minggu Ini</h2>
+            <span style={{
+              background: "var(--terracotta-soft)",
+              color: "var(--terracotta)",
+              fontSize: "11px",
+              fontWeight: 600,
+              padding: "2px 8px",
+              borderRadius: "20px",
+            }}>{belumCount}</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {belumSetor.slice(0, 6).map((w) => (
+              <div key={w.id} style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "6px 0",
+                borderBottom: "1px solid var(--line)",
+              }}>
+                <Avatar nama={w.nama} />
+                <div>
+                  <div style={{ fontSize: "13px", fontWeight: 500, color: "var(--ink)" }}>{w.nama}</div>
+                  <div style={{ fontSize: "11px", color: "var(--ink-soft)" }}>{w.no_rumah ?? "—"}</div>
+                </div>
+              </div>
+            ))}
+            {belumCount > 6 && (
+              <Link href="/transaksi" style={{ fontSize: "12px", color: "var(--brass)", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>
+                +{belumCount - 6} lainnya →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Chart ── */}
+      <div style={{
+        background: "var(--paper-raised)",
+        border: "1px solid var(--line)",
+        borderRadius: "12px",
+        padding: "20px 22px",
+        boxShadow: "var(--shd)",
+        marginBottom: "20px",
+      }}>
+        <h2 style={{
+          fontFamily: "'Fraunces', serif",
+          fontSize: "15.5px",
+          fontWeight: 600,
+          color: "var(--green)",
+          margin: "0 0 16px",
+        }}>Tren Kas 6 Bulan Terakhir</h2>
+        <ChartBars data={chartBulanan} />
+      </div>
 
       {/* ── Transaksi Terbaru ── */}
-      <Card>
-        <CardHeader
-          title={t.txnTitle}
-          action={
-            <Link href="/laporan" style={{
-              display: "inline-flex", alignItems: "center", gap: "4px",
-              fontSize: "12px", fontWeight: 600,
-              color: "var(--p)", textDecoration: "none",
-            }}>
-              {t.txnSeeAll}
-              <ArrowRight size={12} strokeWidth={2.5} />
-            </Link>
-          }
-        />
+      <div style={{
+        background: "var(--paper-raised)",
+        border: "1px solid var(--line)",
+        borderRadius: "12px",
+        boxShadow: "var(--shd)",
+        overflow: "hidden",
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "16px 22px",
+          borderBottom: "1px solid var(--line)",
+        }}>
+          <h2 style={{
+            fontFamily: "'Fraunces', serif",
+            fontSize: "15.5px",
+            fontWeight: 600,
+            color: "var(--green)",
+            margin: 0,
+          }}>Transaksi Terbaru</h2>
+          <Link href="/transaksi" style={{
+            fontSize: "12px",
+            fontWeight: 600,
+            color: "var(--brass)",
+            textDecoration: "none",
+          }}>Lihat semua →</Link>
+        </div>
+
         {transaksiTerbaru.length === 0 ? (
-          <div style={{ padding: "48px 20px", textAlign: "center" }}>
-            <div style={{
-              width: "56px", height: "56px", borderRadius: "16px",
-              background: "var(--surf3)", display: "flex",
-              alignItems: "center", justifyContent: "center",
-              color: "var(--text3)", margin: "0 auto 12px",
-            }}>
-              <ClipboardList size={24} strokeWidth={1.5} />
-            </div>
-            <p style={{ fontSize: "13px", color: "var(--text3)", marginBottom: "14px" }}>
-              {t.txnEmpty}
-            </p>
-            <Link href="/transaksi" style={{
-              display: "inline-flex", alignItems: "center", gap: "6px",
-              background: "var(--p)", color: "#fff",
-              borderRadius: "8px", padding: "8px 16px",
-              fontSize: "12px", fontWeight: 700, textDecoration: "none",
-            }}>
-              <Plus size={14} strokeWidth={2.5} />
-              {t.txnEmptyBtn}
-            </Link>
+          <div style={{ padding: "36px 20px", textAlign: "center", color: "var(--ink-soft)", fontSize: "13px" }}>
+            Belum ada transaksi minggu ini.
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13px" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "13.5px" }}>
               <thead>
-                <tr style={{ borderBottom: "1px solid var(--bdr)" }}>
-                  {[t.txnColNasabah, t.txnColJenis, t.txnColBerat, t.txnColNilai, t.txnColTgl].map((h, i) => (
-                    <th key={i} style={{
-                      padding: "10px 16px",
-                      textAlign: i > 1 ? "right" : "left",
-                      fontSize: "10px", fontWeight: 600,
-                      textTransform: "uppercase", letterSpacing: "0.7px",
-                      color: "var(--text3)",
+                <tr style={{ borderBottom: "2px solid var(--line)" }}>
+                  {["Warga", "Status", "Nominal", "Tanggal"].map((h) => (
+                    <th key={h} style={{
+                      textAlign: "left",
+                      padding: "8px 22px",
+                      fontSize: "11px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                      color: "var(--ink-soft)",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
                     }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {transaksiTerbaru.map((t2: any, i: number) => (
-                  <tr key={t2.id} style={{
-                    borderBottom: i < transaksiTerbaru.length - 1
-                      ? "1px solid var(--bdr)" : "none",
-                  }}>
-                    <td style={{ padding: "12px 16px", fontWeight: 600, color: "var(--text)" }}>
-                      {t2.nasabah?.nama_lengkap ?? "—"}
+                {transaksiTerbaru.map((row, i) => (
+                  <tr
+                    key={row.id}
+                    style={{
+                      borderBottom: i < transaksiTerbaru.length - 1 ? "1px solid var(--line)" : "none",
+                    }}
+                  >
+                    <td style={{ padding: "11px 22px", fontWeight: 600, color: "var(--ink)" }}>
+                      {row.warga?.nama ?? "—"}
                     </td>
-                    <td style={{ padding: "12px 16px" }}>
-                      <span style={{
-                        background: "var(--p5)", color: "var(--p)",
-                        borderRadius: "6px", padding: "3px 9px",
-                        fontSize: "11px", fontWeight: 600,
-                      }}>{t2.sampah?.nama_sampah ?? "—"}</span>
+                    <td style={{ padding: "11px 22px" }}>
+                      <Stamp status={row.status} />
                     </td>
                     <td style={{
-                      padding: "12px 16px", textAlign: "right",
-                      color: "var(--text2)", fontWeight: 500,
+                      padding: "11px 22px",
+                      textAlign: "right",
+                      fontFamily: "'IBM Plex Mono', monospace",
+                      color: "var(--ink-soft)",
                     }}>
-                      {t2.berat_kg} kg
+                      {row.status === "nihil" ? "—" : formatRupiah(row.jumlah_setor)}
                     </td>
                     <td style={{
-                      padding: "12px 16px", textAlign: "right",
-                      fontWeight: 700, color: "var(--p)",
+                      padding: "11px 22px",
+                      fontSize: "12px",
+                      color: "var(--ink-soft)",
+                      whiteSpace: "nowrap",
                     }}>
-                      {formatRupiah(t2.nilai_bersih)}
-                    </td>
-                    <td style={{
-                      padding: "12px 16px", textAlign: "right",
-                      fontSize: "11px", color: "var(--text3)",
-                    }}>
-                      {formatTanggalPendek(t2.tanggal_setor)}
+                      {formatTanggalPendek(row.minggu_ke)}
                     </td>
                   </tr>
                 ))}
@@ -376,50 +566,7 @@ export default function DashboardClient({
             </table>
           </div>
         )}
-      </Card>
-
-      {/* ── Lebaran Alert ── */}
-      {(metrics?.total_liabilities ?? 0) > 0 && (
-        <div style={{
-          background: "var(--acc2)",
-          border: "1px solid rgba(217,119,6,0.2)",
-          borderRadius: "var(--r)", padding: "18px 20px",
-          display: "flex", gap: "14px", alignItems: "flex-start",
-          transition: "background 0.25s",
-        }}>
-          <div style={{
-            width: "40px", height: "40px", borderRadius: "11px",
-            background: "rgba(217,119,6,0.12)", flexShrink: 0,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--acc)",
-          }}>
-            <AlertTriangle size={18} strokeWidth={2.5} />
-          </div>
-          <div style={{ flex: 1 }}>
-            <p style={{ fontWeight: 700, color: "var(--acc)", fontSize: "14px" }}>
-              {t.lebaranTitle}
-            </p>
-            <p style={{ fontSize: "12px", color: "var(--text2)", marginTop: "5px", lineHeight: 1.65 }}>
-              Total{" "}
-              <strong style={{ color: "var(--acc)" }}>
-                {formatRupiah(metrics?.total_liabilities ?? 0)}
-              </strong>{" "}
-              {lang === "en"
-                ? "must be prepared for Eid disbursement. Ensure sufficient physical cash."
-                : "harus disiapkan untuk pencairan lebaran. Pastikan kas fisik sudah mencukupi."}
-            </p>
-            <Link href="/penarikan" style={{
-              display: "inline-flex", alignItems: "center", gap: "5px",
-              marginTop: "12px", background: "var(--acc)", color: "#fff",
-              borderRadius: "8px", padding: "7px 14px",
-              fontSize: "12px", fontWeight: 700, textDecoration: "none",
-            }}>
-              {t.lebaranBtn}
-              <ArrowRight size={12} strokeWidth={2.5} />
-            </Link>
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

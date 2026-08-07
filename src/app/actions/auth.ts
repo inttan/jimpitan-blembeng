@@ -12,7 +12,7 @@ export async function login(formData: FormData) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: "Email atau password salah." };
 
-  redirect("/");
+  return { success: true };
 }
 
 export async function logout() {
