@@ -68,7 +68,7 @@ export default async function TransaksiPage() {
               </tr>
             </thead>
             <tbody>
-              {(txRows as TxRow[]).map((r, i) => (
+              {(txRows as unknown as TxRow[]).map((r, i) => (
                 <tr key={r.id} style={{ borderBottom: i < txRows.length - 1 ? "1px solid var(--line)" : "none" }}>
                   <td style={{ padding: "9px 12px", fontWeight: 600, color: "var(--ink)" }}>{r.warga?.nama ?? "—"}</td>
                   <td style={{ padding: "9px 12px", color: "var(--ink-soft)", fontSize: "11px" }}>{r.warga?.no_rumah ?? "—"}</td>
