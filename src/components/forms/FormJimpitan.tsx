@@ -31,13 +31,18 @@ export default function FormJimpitan({
   const [jumlah, setJumlah] = useState(String(NOMINAL_STANDAR));
   const [status, setStatus] = useState<StatusJimpitan>("lunas");
   const [jumlahMinggu, setJumlahMinggu] = useState(1);
-  const [keterangan, setKeterangan] = useState(""); // Default 1 minggu
+  const [keterangan, setKeterangan] = useState("");
 
   const jumlahNum = status === "nihil" ? 0 : parseFloat(jumlah) || 0;
 
-  // Check for existing transactions in selected weeks
+  // FIX: sebelumnya ada guard `!existingTxs?.length` yang bikin fungsi ini
+  // langsung return [] kalau belum ada riwayat transaksi sama sekali
+  // (misal setelah TRUNCATE / warga baru). Itu bikin mingguInfo SELALU
+  // kosong di kondisi database bersih, sehingga handleSubmit loop 0x
+  // tapi tetap menampilkan "berhasil". Guard itu dihapus — existingTxs
+  // kosong itu valid, artinya semua minggu memang belum pernah disetor.
   const getMingguInfo = (minggu: string, count: number) => {
-    if (!minggu || !existingTxs?.length) return [];
+    if (!minggu) return [];
 
     const infos: { minggu: string; status: string; sudahLunas: boolean }[] = [];
     const startDate = new Date(minggu + "T00:00:00");
@@ -47,12 +52,13 @@ export default function FormJimpitan({
     for (let i = 0; i < count; i++) {
       const d = new Date(startDate);
       d.setDate(d.getDate() + i * 7);
-      // Pakai local date string (YYYY-MM-DD) agar konsisten dengan getMingguKe() & DB
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, "0");
       const day = String(d.getDate()).padStart(2, "0");
       const mgg = `${y}-${m}-${day}`;
-      const existing = existingTxs.find((tx) => tx.warga_id === wargaId && tx.minggu_ke === mgg);
+      const existing = (existingTxs ?? []).find(
+        (tx) => tx.warga_id === wargaId && tx.minggu_ke === mgg
+      );
       infos.push({
         minggu: mgg,
         status: existing?.status || "belum",
@@ -68,32 +74,68 @@ export default function FormJimpitan({
 
   function handleSubmit() {
     setError(null);
+
     if (!wargaId) {
       setError("Pilih warga terlebih dahulu.");
       return;
     }
-    if (isPending) return; // Guard against double-submit
+    if (isPending) return;
+
+    const mingguToProcess = mingguInfo.filter((m) => !m.sudahLunas);
+
+    // FIX: safety net kedua. Kalau karena alasan apapun tidak ada minggu
+    // yang perlu diproses, tampilkan error, JANGAN lanjut ke setSuccessResult.
+    if (mingguToProcess.length === 0) {
+      setError(
+        "Tidak ada minggu yang diproses — mungkin semua minggu terpilih sudah lunas, atau tanggal setor belum valid."
+      );
+      return;
+    }
 
     startTransition(async () => {
-      // Simpan untuk setiap minggu
-      for (const info of mingguInfo) {
-        if (info.sudahLunas) continue; // Skip yang udah lunas
-        const result = await simpanJimpitan({
-          warga_id: wargaId,
-          minggu_ke: info.minggu,
-          jumlah_setor: jumlahNum,
-          status: status,
-        });
-        if (!result.success) {
-          setError(`Gagal menyimpan untuk ${formatPeriodeMinggu(info.minggu)}: ${result.error}`);
-          return;
+      let sudahTersimpan = 0;
+      let lastSuccessData: any = null;
+
+      for (const info of mingguToProcess) {
+        try {
+          const result = await simpanJimpitan({
+            warga_id: wargaId,
+            minggu_ke: info.minggu,
+            jumlah_setor: jumlahNum,
+            status: status,
+          });
+
+          if (!result.success) {
+            setError(`Gagal menyimpan untuk ${formatPeriodeMinggu(info.minggu)}: ${result.error}`);
+            return; // STOP — jangan lanjut ke setSuccessResult kalau ada yang gagal
+          }
+          sudahTersimpan++;
+          lastSuccessData = result.data;
+        } catch (err) {
+          setError(
+            `Terjadi kesalahan saat menyimpan ${formatPeriodeMinggu(info.minggu)}: ${
+              err instanceof Error ? err.message : String(err)
+            }`
+          );
+          return; // STOP
         }
       }
+
+      // FIX: safety net ketiga — cuma tampilkan sukses kalau BENERAN ada
+      // yang tersimpan ke database.
+      if (sudahTersimpan === 0) {
+        setError("Tidak ada transaksi yang berhasil disimpan. Coba lagi.");
+        return;
+      }
+
       setSuccessResult({
         warga: wargaList.find((w) => w.id === wargaId),
         jumlah_setor: totalNominal,
         status,
         jumlah_minggu: jumlahMinggu,
+        potongan_kas: lastSuccessData?.potongan_kas,
+        dana_kegiatan: lastSuccessData?.dana_kegiatan,
+        minggu_ke: lastSuccessData?.minggu_ke,
       });
       setWargaId("");
       setJumlah(String(NOMINAL_STANDAR));
