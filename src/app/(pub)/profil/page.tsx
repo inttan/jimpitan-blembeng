@@ -9,7 +9,7 @@ export default function ProfilPage() {
   const profilData = {
     namaDusun: "Dusun Blembeng",
     desa: "Purwodadi",
-    kecamatan: "Tegalejo",
+    kecamatan: "Tegalrejo",
     kabupaten: "Magelang",
     provinsi: "Jawa Tengah",
     jumlahKK: 87,
@@ -65,7 +65,7 @@ export default function ProfilPage() {
                 Profil <span style={{ color: "var(--green)" }}>Dusun</span> <span style={{ color: "var(--brass)" }}>Blembeng</span>
               </h1>
               <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text2)" }}>
-                Mengenal lebih dekat komunitas kami di <strong>Desa Purwodadi, Kecamatan Tegalejo, Kabupaten Magelang</strong>.
+                Mengenal lebih dekat komunitas kami di <strong>Desa Purwodadi, Kecamatan Tegalrejo, Kabupaten Magelang</strong>.
               </p>
               <div className="grid grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl text-center" style={{ background: "var(--p6)", border: "1px solid var(--p5)" }}>
@@ -113,7 +113,7 @@ export default function ProfilPage() {
               <div className="p-6 rounded-2xl" style={{ background: "var(--surf)", border: "1px solid var(--bdr)" }}>
                 <p className="leading-relaxed" style={{ color: "var(--text2)" }}>
                   Dusun Blembeng merupakan salah satu dusun yang berada di bawah naungan Desa Purwodadi,
-                  Kecamatan Tegalejo, Kabupaten Magelang. Didirikan pada tahun {profilData.tahunBerdiri},
+                  Kecamatan Tegalrejo, Kabupaten Magelang. Didirikan pada tahun {profilData.tahunBerdiri},
                   dusun ini telah mengalami pertumbuhan yang signifikan dengan {profilData.jumlahKK} kepala
                   keluarga dan {profilData.jumlahWarga} jiwa.
                 </p>
@@ -156,7 +156,7 @@ export default function ProfilPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>Lokasi Dusun</h2>
-            <p className="text-lg" style={{ color: "var(--text2)" }}>Dusun Blembeng terletak di Desa Purwodadi, Kecamatan Tegalejo</p>
+            <p className="text-lg" style={{ color: "var(--text2)" }}>Dusun Blembeng terletak di Desa Purwodadi, Kecamatan Tegalrejo</p>
           </div>
           <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--bdr)", boxShadow: "var(--shd2)" }}>
             <div className="aspect-[16/9] md:aspect-[21/9]">
@@ -172,7 +172,7 @@ export default function ProfilPage() {
                 <div style={{ width: "1px", height: "40px", background: "var(--bdr)" }} />
                 <div><span className="text-sm" style={{ color: "var(--text3)" }}>Desa</span><p className="font-medium" style={{ color: "var(--ink)" }}>Purwodadi</p></div>
                 <div style={{ width: "1px", height: "40px", background: "var(--bdr)" }} />
-                <div><span className="text-sm" style={{ color: "var(--text3)" }}>Kecamatan</span><p className="font-medium" style={{ color: "var(--ink)" }}>Tegalejo</p></div>
+                <div><span className="text-sm" style={{ color: "var(--text3)" }}>Kecamatan</span><p className="font-medium" style={{ color: "var(--ink)" }}>Tegalrejo</p></div>
                 <div style={{ width: "1px", height: "40px", background: "var(--bdr)" }} />
                 <div><span className="text-sm" style={{ color: "var(--text3)" }}>Kabupaten</span><p className="font-medium" style={{ color: "var(--ink)" }}>Magelang</p></div>
               </div>

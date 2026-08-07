@@ -109,7 +109,7 @@ export default async function BerandaPage() {
                 <span className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: "#86EFAC" }} />
                 <span className="absolute inset-0 w-2.5 h-2.5 rounded-full animate-ping" style={{ background: "#86EFAC", opacity: 0.5 }} />
               </div>
-              <span className="text-sm font-medium tracking-wide">Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo</span>
+              <span className="text-sm font-medium tracking-wide">Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo</span>
             </div>
 
             {/* Main Heading */}

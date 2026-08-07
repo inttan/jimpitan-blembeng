@@ -106,7 +106,7 @@ export default function LoginPage() {
               name="email"
               type="text"
               autoComplete="username"
-              placeholder="kadus.blembeng"
+              placeholder="email@contoh.com"
               style={{
                 width: "100%",
                 padding: "11px 13px",

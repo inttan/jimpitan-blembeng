@@ -204,7 +204,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </div>
               <p className="text-sm leading-relaxed" style={{ color: "var(--text2)" }}>
                 Sistem pengelolaan kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga
-                {" "}Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo.
+                {" "}Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo.
               </p>
             </div>
 
@@ -241,7 +241,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </h4>
               <div className="space-y-3 text-sm" style={{ color: "var(--text2)" }}>
                 <p>Dusun Blembeng</p>
-                <p>Desa Purwodadi, Kec. Tegalejo</p>
+                <p>Desa Purwodadi, Kec. Tegalrejo</p>
                 <p>Kabupaten Magelang, Jawa Tengah</p>
               </div>
             </div>

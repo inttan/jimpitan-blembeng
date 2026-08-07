@@ -1,7 +1,7 @@
 # Jimpitan Dusun Blembeng
 
 ## Overview
-Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo.
+Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo.
 
 ## Fitur
 - Autentikasi - Login aman untuk Pengurus Dusun
@@ -14,7 +14,7 @@ Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Dusun Blembe
 - Website Dusun - Halaman publik untuk warga
 
 ## Lokasi
-Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalejo, Indonesia
+Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo, Indonesia
 
 ## License
 MIT License
