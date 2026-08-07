@@ -1,61 +1,81 @@
-# Smart Waste Management System
+# Jimpitan Daven Blembeng
 
 ## 🌍 Overview
-Smart Waste Management System is a web-based platform designed to help communities manage recyclable waste efficiently through digital tracking, analytics, and automated communication.
-
-This system enables users to record waste deposits, monitor recycling activities, and access real-time insights through an interactive dashboard.
-
-To improve accessibility and user engagement, the platform integrates a WhatsApp-based messaging system for automated notifications and updates.
+Sistem kas kegiatan dan jimpitan mingguan untuk kesejahteraan warga Daven Blembeng, Purwojadi. Aplikasi web-based yang membantu pengelolaan kas dusun secara transparan dan akuntabel.
 
 ---
 
-## 🚀 Features
-- 🔐 Authentication system 
-- ♻️ Waste deposit tracking
-- 📊 Interactive dashboard with analytics
-- 📁 Transaction history management
-- 📲 WhatsApp notification integration
-- 🔔 Real-time updates and alerts
+## ✨ Fitur
+- 🔐 **Autentikasi** - Login aman untuk Pengurus Daven
+- 💰 **Kas Kegiatan** - Kelola kas masuk dan kas keluar dusun
+- 👥 **Data Warga** - Manajemen warga Daven Blembeng
+- 💵 **Jimpitan Mingguan** - Catat setoran jimpitan warga per minggu
+- 👷 **Upah Penarik** - Kelola upah penarik jimpitan
+- 📊 **Dashboard** - Ringkasan statistik dan progres setoran
+- 📋 **Laporan** - Laporan kas kegiatan dalam format PDF
+- 🌐 **Website Daven** - Halaman publik untuk warga
 
 ---
 
-##  Messaging Automation (WhatsApp Integration)
-This project integrates a WhatsApp Gateway to provide seamless communication between the system and users.
-
-Key functionalities:
-- Automated deposit confirmations
-- Waste pickup notifications
-- Reminder alerts
-- Real-time updates without requiring users to access the web platform
-
-This approach improves user engagement and reduces dependency on the web interface.
+## 💰 Alur Jimpitan
+1. Warga menyetor jimpitan mingguan (default Rp 3.500)
+2. 95% masuk ke **Kas Kegiatan** dusun
+3. 5% masuk ke **Upah Penarik**
+4. Kas kegiatan digunakan untuk program kerja dusun
+5. Transparansi penuh - warga bisa lihat laporan
 
 ---
 
 ## 🛠 Tech Stack
-- **Frontend**: Next.js, TypeScript, Tailwind CSS
-- **Backend**: (isi sesuai punyamu, misal) Node.js / CodeIgniter
-- **Database**: MySQL / PostgreSQL
-- **API Integration**: WhatsApp Gateway
-- **Deployment**: :contentReference[oaicite:0]{index=0}
+- **Frontend**: Next.js 16, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL (Supabase)
+- **Auth**: Supabase Auth
+- **Deployment**: Vercel
 
 ---
 
-## 📸 Screenshots
-(Add screenshots here)
-
-Example:
-- Dashboard
-- Waste deposit feature
-- Analytics chart
-- Notification system
-
----
-
-## ⚙️ Installation
+## ⚙️ Instalasi
 
 ```bash
-git clone https://github.com/your-username/smart-waste-management-system.git
-cd smart-waste-management-system
+# Clone repository
+git clone https://github.com/inttan/jimpitan-blembeng.git
+cd jimpitan-blembeng
+
+# Install dependencies
 npm install
+
+# Setup environment variables
+cp .env.example .env.local
+# Edit .env.local dengan credentials Supabase
+
+# Run development server
 npm run dev
+```
+
+---
+
+## 📁 Struktur Database
+
+### Tabel Utama
+- `warga` - Data warga Daven
+- `penarik` - Data penarik jimpitan
+- `jimpitan_transaksi` - Transaksi setoran jimpitan
+- `kas_kegiatan` - Ledger kas masuk dan keluar
+- `upah_penarik` - Upah penarik per periode
+- `riwayat_perubahan` - Audit trail
+
+### View
+- `v_saldo_kas` - Saldo kas kegiatan real-time
+- `v_belum_setor_minggu_ini` - Warga belum setor
+- `v_upah_belum_dibayar` - Total upah belum dibayar
+
+---
+
+## 📍 Lokasi
+Daven Blembeng, Purwojadi, Indonesia
+
+---
+
+## 📜 License
+MIT License
