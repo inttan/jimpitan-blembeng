@@ -126,6 +126,7 @@ async function getDashboardData() {
     console.error(e);
     return {
       saldoKas: 0, saldoKasPrev: 0,
+      belumSetor: [],
       totalUpahBelum: 0,
       wargaAktif: 0, totalWarga: 0,
       lunasMingguIni: 0, totalSetorMingguIni: 0,
