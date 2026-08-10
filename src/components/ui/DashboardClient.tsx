@@ -1,8 +1,5 @@
 "use client";
-import Link from "next/link";
 import { formatRupiah, formatTanggalPendek } from "@/lib/utils";
-import { NOMINAL_STANDAR } from "@/lib/jimpitan";
-import { useState, useRef } from "react";
 
 interface DashboardData {
   saldoKas: number;
@@ -385,22 +382,16 @@ export default function DashboardClient(props: DashboardData) {
         boxShadow: "var(--shd)",
         marginBottom: "20px",
       }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
-          <h2 style={{
-            fontFamily: "'Fraunces', serif",
-            fontSize: "15.5px",
-            fontWeight: 600,
-            color: "var(--green)",
-            margin: 0,
-          }}>Progress Setoran Minggu Ini</h2>
-          <Link href="/transaksi" style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "var(--brass)",
-            textDecoration: "none",
-          }}>Lihat detail →</Link>
+        <h2 style={{
+          fontFamily: "'Fraunces', serif",
+          fontSize: "15.5px",
+          fontWeight: 600,
+          color: "var(--green)",
+          margin: 0,
+        }}>Progress Setoran Minggu Ini</h2>
+        <div style={{ marginTop: "10px" }}>
+          <ProgressBar done={lunasCount} total={wargaAktif} />
         </div>
-        <ProgressBar done={lunasCount} total={wargaAktif} />
       </div>
 
       {/* ── Belum Setor ── */}
@@ -447,9 +438,9 @@ export default function DashboardClient(props: DashboardData) {
               </div>
             ))}
             {belumCount > 6 && (
-              <Link href="/transaksi" style={{ fontSize: "12px", color: "var(--brass)", fontWeight: 600, textDecoration: "none", textAlign: "center" }}>
-                +{belumCount - 6} lainnya →
-              </Link>
+              <div style={{ fontSize: "12px", color: "var(--ink-soft)", textAlign: "center", marginTop: "4px" }}>
+                +{belumCount - 6} warga lainnya
+              </div>
             )}
           </div>
         </div>
@@ -483,9 +474,6 @@ export default function DashboardClient(props: DashboardData) {
         overflow: "hidden",
       }}>
         <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
           padding: "16px 22px",
           borderBottom: "1px solid var(--line)",
         }}>
@@ -496,12 +484,6 @@ export default function DashboardClient(props: DashboardData) {
             color: "var(--green)",
             margin: 0,
           }}>Transaksi Terbaru</h2>
-          <Link href="/transaksi" style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "var(--brass)",
-            textDecoration: "none",
-          }}>Lihat semua →</Link>
         </div>
 
         {transaksiTerbaru.length === 0 ? (

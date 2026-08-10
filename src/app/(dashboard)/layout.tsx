@@ -1,13 +1,14 @@
 import Sidebar from "@/components/ui/Sidebar";
 import TopBar from "@/components/ui/TopBar";
 import BottomNav from "@/components/ui/BottomNav";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  // Auth dimatikan sementara untuk testing
-  // Aktifkan lagi nanti:
-  // const supabase = await createClient();
-  // const { data: { user } } = await supabase.auth.getUser();
-  // if (!user) redirect("/login");
+  // Auth check - redirect to login if not authenticated
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
   return (
     <div style={{ display: "flex", height: "100vh", overflow: "hidden", background: "var(--bg)" }}>
