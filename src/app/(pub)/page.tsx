@@ -62,7 +62,7 @@ export default function BerandaPage() {
             </h1>
 
             <p className="text-lg md:text-2xl leading-relaxed mb-12 max-w-2xl mx-auto animate-fade-in-up" style={{ color: "rgba(246,243,234,0.85)", animationDelay: "0.4s" }}>
-              Bersama membangun dusun melalui <span className="font-semibold" style={{ color: "#86EFAC" }}>pengelolaan kas kegiatan</span> yang transparan dan partisipasi aktif seluruh warga dalam program kerja.
+              Bersama membangun dusun melalui <span className="font-semibold" style={{ color: "#86EFAC" }}>sistem informasi dusun</span> yang transparan dan partisipasi aktif seluruh warga dalam program kerja.
             </p>
 
             <div className="flex flex-wrap justify-center gap-5 animate-fade-in-up" style={{ animationDelay: "0.6s" }}>
@@ -87,15 +87,6 @@ export default function BerandaPage() {
                 Masuk Admin
               </Link>
             </div>
-
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-fade-in-up" style={{ animationDelay: "1s" }}>
-              <div className="flex flex-col items-center gap-2" style={{ color: "rgba(246,243,234,0.5)" }}>
-                <span className="text-xs tracking-widest uppercase">Scroll</span>
-                <div className="w-6 h-10 rounded-full border-2 flex justify-center pt-2" style={{ borderColor: "rgba(246,243,234,0.3)" }}>
-                  <div className="w-1.5 h-3 rounded-full animate-bounce" style={{ background: "rgba(246,243,234,0.6)" }} />
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -116,7 +107,7 @@ export default function BerandaPage() {
                   </div>
                   <h3 className="text-xl font-semibold mb-2" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>{proker.title}</h3>
                   <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text2)" }}>{proker.desc}</p>
-                  <div className="flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: proker.color }}>
+                  <div className="flex items-center gap-2 text-sm font-medium transition-colors" style={{ color: "var(--brass)" }}>
                     <span>Selengkapnya</span>
                     <svg className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                   </div>
@@ -131,19 +122,20 @@ export default function BerandaPage() {
       <section className="py-20 md:py-28" style={{ background: "var(--green)" }}>
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: "var(--paper)", fontFamily: "var(--font-fraunces)" }}>Transparansi untuk Warga</h2>
-          <p className="text-lg md:text-xl mb-8 opacity-90" style={{ color: "var(--paper)" }}>Seluruh data kas kegiatan dan transaksi jimpitan dapat diakses oleh seluruh warga. Bersama kita jaga transparansi dan akuntabilitas.</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/kalender" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200" style={{ background: "var(--paper)", color: "var(--green)" }}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
-              Lihat Kalender Kegiatan
-            </Link>
-            <Link href="/struktur" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-medium transition-all duration-200" style={{ background: "transparent", color: "var(--paper)", border: "2px solid var(--paper)" }}>
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" /></svg>
-              Kenali Struktur Kami
-            </Link>
-          </div>
+          <p className="text-lg md:text-xl mb-10 opacity-90" style={{ color: "var(--paper)" }}>Seluruh informasi dan laporan kas dapat dipantau secara terbuka oleh seluruh warga. Bersama kita jaga transparansi dan akuntabilitas dalam pengelolaan dusun.</p>
+          <Link href="/info-jimpitan" className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-base transition-all duration-200 hover:-translate-y-1" style={{ background: "var(--paper)", color: "var(--green)", boxShadow: "0 4px 20px rgba(0,0,0,0.2)" }}>
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+            Lihat Informasi Jimpitan
+          </Link>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="py-10 text-center" style={{ background: "var(--surf)", borderTop: "1px solid var(--bdr)" }}>
+        <p className="text-base font-medium mb-1" style={{ color: "var(--ink)" }}>Dusun Blembeng</p>
+        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>Desa Purwodadi, Kecamatan Tegalrejo</p>
+        <p className="text-xs" style={{ color: "var(--text2)" }}>Dikembangkan oleh Tim KKN UNIMMA</p>
+      </footer>
     </div>
   );
 }

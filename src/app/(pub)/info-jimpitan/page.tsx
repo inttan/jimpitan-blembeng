@@ -259,7 +259,7 @@ export default async function InfoJimpitanPage() {
                 <p className="text-sm" style={{ color: "var(--text2)", lineHeight: 1.7 }}>
                   Data yang ditampilkan adalah informasi agregat untuk menjaga privasi warga.
                   Detail transaksi dan pengelolaan kas dapat dipantau melalui sistem admin yang
-                  dikelola oleh Pengurus Karang Taruna.
+                  dikelola oleh Pengurus.
                 </p>
               </div>
             </div>
@@ -268,10 +268,10 @@ export default async function InfoJimpitanPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 text-center" style={{ borderTop: "1px solid var(--bdr)" }}>
-        <p className="text-sm" style={{ color: "var(--text2)" }}>
-          Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo
-        </p>
+      <footer className="py-10 text-center" style={{ background: "var(--surf)", borderTop: "1px solid var(--bdr)" }}>
+        <p className="text-base font-medium mb-1" style={{ color: "var(--ink)" }}>Dusun Blembeng</p>
+        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>Desa Purwodadi, Kecamatan Tegalrejo</p>
+        <p className="text-xs" style={{ color: "var(--text2)" }}>Dikembangkan oleh Tim KKN UNIMMA</p>
       </footer>
     </div>
   );
