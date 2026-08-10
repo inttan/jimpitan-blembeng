@@ -15,7 +15,7 @@ const programKerja = [
     desc: "Tempat penyimpanan Tratak, panggung, dan perlengkapan dusun",
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>,
     color: "#B8863B",
-    href: "/proker",
+    href: "/gudang",
   },
   {
     id: "nyinom",
@@ -131,11 +131,6 @@ export default function BerandaPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 text-center" style={{ background: "var(--surf)", borderTop: "1px solid var(--bdr)" }}>
-        <p className="text-base font-medium mb-1" style={{ color: "var(--ink)" }}>Dusun Blembeng</p>
-        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>Desa Purwodadi, Kecamatan Tegalrejo</p>
-        <p className="text-xs" style={{ color: "var(--text2)" }}>Dikembangkan oleh Tim KKN UNIMMA</p>
-      </footer>
     </div>
   );
 }
