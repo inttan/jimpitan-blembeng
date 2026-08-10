@@ -255,9 +255,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             <p className="text-xs" style={{ color: "var(--text3)" }}>
               Dikembangkan oleh{" "}
               <span style={{ color: "var(--brass)", fontWeight: 500 }}>Tim KKN UNIMMA 2026</span>{" "}
-              bersama{" "}
-              <span style={{ color: "var(--green)", fontWeight: 500 }}>Karang Taruna</span>{" "}
-              Dusun Blembeng
+          
             </p>
           </div>
         </div>

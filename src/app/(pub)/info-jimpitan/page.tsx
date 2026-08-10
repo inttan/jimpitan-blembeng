@@ -268,11 +268,6 @@ export default async function InfoJimpitanPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-10 text-center" style={{ background: "var(--surf)", borderTop: "1px solid var(--bdr)" }}>
-        <p className="text-base font-medium mb-1" style={{ color: "var(--ink)" }}>Dusun Blembeng</p>
-        <p className="text-sm mb-4" style={{ color: "var(--text2)" }}>Desa Purwodadi, Kecamatan Tegalrejo</p>
-        <p className="text-xs" style={{ color: "var(--text2)" }}>Dikembangkan oleh Tim KKN UNIMMA</p>
-      </footer>
     </div>
   );
 }
