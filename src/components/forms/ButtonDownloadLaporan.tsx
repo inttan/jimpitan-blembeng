@@ -2,68 +2,59 @@
 import { useState } from "react";
 import { FileDown, Loader2 } from "lucide-react";
 
-type Mode = "mingguan" | "bulanan" | "tahunan";
+type Mode = "tanggal" | "bulanan" | "tahunan";
 
 export default function ButtonDownloadLaporan() {
-  const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState<Mode>("mingguan");
+  const [mode, setMode] = useState<Mode>("tanggal");
   const [loadingRiwayat, setLoadingRiwayat] = useState(false);
-  const [minggu, setMinggu] = useState(() => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    const day = d.getDay();
-    const diff = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diff);
-    // Pakai local date string agar konsisten dengan getMingguKe() JS
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const dayStr = String(d.getDate()).padStart(2, "0");
-    return `${y}-${m}-${dayStr}`;
-  });
+  const [loadingLaporan, setLoadingLaporan] = useState(false);
+
+  // Tanggal range
+  const [dari, setDari] = useState("");
+  const [sampai, setSampai] = useState("");
+
+  // Bulanan
   const [bulan, setBulan] = useState(() => {
     const now = new Date();
     return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   });
+
+  // Tahunan
   const [tahun, setTahun] = useState(() => String(new Date().getFullYear()));
 
-  async function handleDownload() {
-    setLoading(true);
-    try {
-      let qs = `mode=${mode}`;
-      if (mode === "mingguan") qs += `&minggu=${minggu}`;
-      if (mode === "bulanan") qs += `&bulan=${bulan}`;
-      if (mode === "tahunan") qs += `&tahun=${tahun}`;
+  function buildQs() {
+    if (mode === "tanggal") {
+      return `dari=${dari || ""}&sampai=${sampai || ""}`;
+    } else if (mode === "bulanan") {
+      return `bulan=${bulan}`;
+    } else {
+      return `tahun=${tahun}`;
+    }
+  }
 
-      const res = await fetch(`/api/laporan/pdf?${qs}`);
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || "Gagal");
-      }
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      const label = mode === "mingguan" ? minggu : mode === "bulanan" ? bulan : tahun;
-      a.download = `Laporan_Jimpitan_Blembeng_${mode}_${label}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (e: any) {
-      alert(e?.message || "Gagal download laporan PDF. Coba lagi.");
-    } finally {
-      setLoading(false);
+  function getFileName(prefix: string) {
+    if (mode === "tanggal") {
+      const range = dari && sampai ? `${dari}_sd_${sampai}` : dari ? `dari_${dari}` : sampai ? `smp_${sampai}` : "semua";
+      return `${prefix}_${range}.pdf`;
+    } else if (mode === "bulanan") {
+      return `${prefix}_${bulan}.pdf`;
+    } else {
+      return `${prefix}_${tahun}.pdf`;
     }
   }
 
   async function handleRiwayat() {
     setLoadingRiwayat(true);
     try {
-      const res = await fetch("/api/laporan/pdf?mode=riwayat");
+      const qs = `type=riwayat&${buildQs()}`;
+      const res = await fetch(`/api/laporan/pdf?${qs}`);
       if (!res.ok) throw new Error("Gagal");
+
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Laporan_Riwayat_Perubahan_${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.download = getFileName("Riwayat");
       a.click();
       URL.revokeObjectURL(url);
     } catch {
@@ -73,73 +64,124 @@ export default function ButtonDownloadLaporan() {
     }
   }
 
+  async function handleLaporan() {
+    setLoadingLaporan(true);
+    try {
+      const qs = `type=laporan&${buildQs()}`;
+      const res = await fetch(`/api/laporan/pdf?${qs}`);
+      if (!res.ok) throw new Error("Gagal");
+
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = getFileName("Laporan");
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      alert("Gagal export laporan. Coba lagi.");
+    } finally {
+      setLoadingLaporan(false);
+    }
+  }
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      {/* Periode selector */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-        <div>
-          <label style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "var(--ink-soft)",
-            display: "block",
-            marginBottom: "5px",
-          }}>Periode</label>
-          <select
-            value={mode}
-            onChange={(e) => setMode(e.target.value as Mode)}
-            style={{
-              width: "100%",
-              padding: "9px 12px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              border: "1px solid var(--line)",
-              background: "#fff",
-              fontFamily: "'Public Sans', sans-serif",
-              color: "var(--ink)",
-              cursor: "pointer",
-            }}
-          >
-            <option value="mingguan">Minggu</option>
-            <option value="bulanan">Bulan</option>
-            <option value="tahunan">Tahun</option>
-          </select>
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+
+      {/* ── Filter Periode ─────────────────────────────── */}
+      <div style={{
+        padding: "14px",
+        borderRadius: "10px",
+        border: "1px solid var(--line)",
+        background: "var(--paper)",
+      }}>
+        <h3 style={{ fontSize: "13px", fontWeight: 700, color: "var(--ink)", margin: "0 0 12px" }}>
+          📅 Pilih Periode
+        </h3>
+
+        {/* Mode selector */}
+        <div style={{ display: "flex", gap: "8px", marginBottom: "12px" }}>
+          {[
+            { val: "tanggal", label: "Tanggal" },
+            { val: "bulanan", label: "Bulanan" },
+            { val: "tahunan", label: "Tahunan" },
+          ].map((opt) => (
+            <button
+              key={opt.val}
+              onClick={() => setMode(opt.val as Mode)}
+              style={{
+                flex: 1,
+                padding: "8px 12px",
+                borderRadius: "6px",
+                border: "1px solid",
+                borderColor: mode === opt.val ? "var(--green)" : "var(--line)",
+                background: mode === opt.val ? "var(--green)" : "var(--paper-raised)",
+                color: mode === opt.val ? "#fff" : "var(--ink)",
+                fontWeight: 600,
+                fontSize: "12px",
+                cursor: "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
 
-        <div>
-          <label style={{
-            fontSize: "12px",
-            fontWeight: 600,
-            color: "var(--ink-soft)",
-            display: "block",
-            marginBottom: "5px",
-          }}>&nbsp;</label>
-          {mode === "mingguan" && (
-            <input
-              type="date"
-              value={minggu}
-              onChange={(e) => setMinggu(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "9px 12px",
-                borderRadius: "8px",
-                fontSize: "13px",
-                border: "1px solid var(--line)",
-                background: "#fff",
-                fontFamily: "'Public Sans', sans-serif",
-                color: "var(--ink)",
-              }}
-            />
-          )}
-          {mode === "bulanan" && (
+        {/* Tanggal Range */}
+        {mode === "tanggal" && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div>
+              <label style={{ fontSize: "11px", color: "var(--ink-soft)", display: "block", marginBottom: "4px" }}>Dari</label>
+              <input
+                type="date"
+                value={dari}
+                onChange={(e) => setDari(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  border: "1px solid var(--line)",
+                  background: "#fff",
+                  fontFamily: "'Public Sans', sans-serif",
+                  color: "var(--ink)",
+                }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: "11px", color: "var(--ink-soft)", display: "block", marginBottom: "4px" }}>Sampai</label>
+              <input
+                type="date"
+                value={sampai}
+                onChange={(e) => setSampai(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "8px 10px",
+                  borderRadius: "6px",
+                  fontSize: "13px",
+                  border: "1px solid var(--line)",
+                  background: "#fff",
+                  fontFamily: "'Public Sans', sans-serif",
+                  color: "var(--ink)",
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Bulanan */}
+        {mode === "bulanan" && (
+          <div>
+            <label style={{ fontSize: "11px", color: "var(--ink-soft)", display: "block", marginBottom: "4px" }}>Bulan</label>
             <input
               type="month"
               value={bulan}
               onChange={(e) => setBulan(e.target.value)}
               style={{
                 width: "100%",
-                padding: "9px 12px",
-                borderRadius: "8px",
+                padding: "8px 10px",
+                borderRadius: "6px",
                 fontSize: "13px",
                 border: "1px solid var(--line)",
                 background: "#fff",
@@ -147,8 +189,13 @@ export default function ButtonDownloadLaporan() {
                 color: "var(--ink)",
               }}
             />
-          )}
-          {mode === "tahunan" && (
+          </div>
+        )}
+
+        {/* Tahunan */}
+        {mode === "tahunan" && (
+          <div>
+            <label style={{ fontSize: "11px", color: "var(--ink-soft)", display: "block", marginBottom: "4px" }}>Tahun</label>
             <input
               type="number"
               min="2020"
@@ -157,79 +204,86 @@ export default function ButtonDownloadLaporan() {
               onChange={(e) => setTahun(e.target.value)}
               style={{
                 width: "100%",
-                padding: "9px 12px",
-                borderRadius: "8px",
-                fontSize: "13px",
+                padding: "8px 10px",
+                borderRadius: "6px",
+                fontSize: "14px",
                 border: "1px solid var(--line)",
                 background: "#fff",
                 fontFamily: "'IBM Plex Mono', monospace",
                 color: "var(--ink)",
               }}
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Download laporan */}
-      <button
-        onClick={handleDownload}
-        disabled={loading}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "11px 18px",
-          borderRadius: "8px",
-          border: "none",
-          background: "linear-gradient(135deg, #C9943E 0%, #B8863B 40%, #8A6428 100%)",
-          color: "#fff",
-          fontWeight: 600,
-          fontSize: "13.5px",
-          cursor: loading ? "wait" : "pointer",
-          fontFamily: "'Public Sans', sans-serif",
-          opacity: loading ? 0.7 : 1,
-          boxShadow: "0 2px 6px rgba(138,100,40,0.35), inset 0 1px 0 rgba(255,255,255,0.2)",
-          transition: "background 0.15s, box-shadow 0.15s",
-        }}
-        onMouseEnter={(e) => { if (!loading) { (e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, #D4A84E 0%, #C9943E 40%, #8A6428 100%)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(138,100,40,0.45), inset 0 1px 0 rgba(255,255,255,0.25)"; }}}
-        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = "linear-gradient(135deg, #C9943E 0%, #B8863B 40%, #8A6428 100%)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 6px rgba(138,100,40,0.35), inset 0 1px 0 rgba(255,255,255,0.2)"; }}
-      >
-        {loading ? (
-          <><Loader2 size={15} className="animate-spin" /> Membuat PDF...</>
-        ) : (
-          <><FileDown size={15} /> Unduh Laporan (PDF)</>
-        )}
-      </button>
+      {/* ── Tombol Export ─────────────────────────────── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+        <button
+          onClick={handleRiwayat}
+          disabled={loadingRiwayat}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "4px",
+            padding: "14px 12px",
+            borderRadius: "10px",
+            border: "1px solid var(--line)",
+            background: "var(--ink)",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: "12px",
+            cursor: loadingRiwayat ? "wait" : "pointer",
+            fontFamily: "'Public Sans', sans-serif",
+            opacity: loadingRiwayat ? 0.7 : 1,
+            transition: "all 0.15s",
+          }}
+        >
+          {loadingRiwayat ? (
+            <><Loader2 size={16} className="animate-spin" /><span>Membuat...</span></>
+          ) : (
+            <><FileDown size={16} /><span>Export Riwayat</span></>
+          )}
+        </button>
 
-      {/* Export riwayat */}
-      <button
-        onClick={handleRiwayat}
-        disabled={loadingRiwayat}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "8px",
-          padding: "10px 18px",
-          borderRadius: "8px",
-          border: "1px solid var(--line)",
-          background: "var(--paper-raised)",
-          color: "var(--ink)",
-          fontWeight: 600,
-          fontSize: "13px",
-          cursor: loadingRiwayat ? "wait" : "pointer",
-          fontFamily: "'Public Sans', sans-serif",
-          opacity: loadingRiwayat ? 0.7 : 1,
-          transition: "all 0.15s",
-        }}
-      >
-        {loadingRiwayat ? (
-          <><Loader2 size={15} className="animate-spin" /> Membuat...</>
-        ) : (
-          <><FileDown size={15} /> Export Riwayat Perubahan (PDF)</>
-        )}
-      </button>
+        <button
+          onClick={handleLaporan}
+          disabled={loadingLaporan}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "4px",
+            padding: "14px 12px",
+            borderRadius: "10px",
+            border: "none",
+            background: "linear-gradient(135deg, #C9943E 0%, #B8863B 40%, #8A6428 100%)",
+            color: "#fff",
+            fontWeight: 600,
+            fontSize: "12px",
+            cursor: loadingLaporan ? "wait" : "pointer",
+            fontFamily: "'Public Sans', sans-serif",
+            opacity: loadingLaporan ? 0.7 : 1,
+            boxShadow: "0 2px 6px rgba(138,100,40,0.35)",
+            transition: "all 0.15s",
+          }}
+        >
+          {loadingLaporan ? (
+            <><Loader2 size={16} className="animate-spin" /><span>Membuat...</span></>
+          ) : (
+            <><FileDown size={16} /><span>Export Laporan</span></>
+          )}
+        </button>
+      </div>
+
+      <p style={{ fontSize: "10.5px", color: "var(--ink-soft)", margin: 0, textAlign: "center", lineHeight: 1.4 }}>
+        <strong>Riwayat</strong> = semua aktivitas (setoran, kas, edit warga)<br/>
+        <strong>Laporan</strong> = setoran & kas keluar aja
+      </p>
+
     </div>
   );
 }

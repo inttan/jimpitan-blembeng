@@ -8,7 +8,6 @@ interface DashboardData {
   saldoKas: number;
   saldoKasPrev: number;
   belumSetor: { id: string; nama: string; no_hp: string | null; no_rumah: string | null }[];
-  totalUpahBelum: number;
   wargaAktif: number;
   totalWarga: number;
   lunasMingguIni: number;
@@ -16,8 +15,6 @@ interface DashboardData {
   transaksiTerbaru: {
     id: string;
     status: string;
-    potongan_kas: number;
-    dana_kegiatan: number;
     minggu_ke: string;
     warga: { nama: string } | null;
     jumlah_setor: number;
@@ -303,7 +300,7 @@ function Stamp({ status }: { status: string }) {
 
 export default function DashboardClient(props: DashboardData) {
   const {
-    saldoKas, saldoKasPrev, belumSetor, totalUpahBelum, wargaAktif, totalWarga,
+    saldoKas, saldoKasPrev, belumSetor, wargaAktif, totalWarga,
     lunasMingguIni, totalSetorMingguIni, transaksiTerbaru, chartBulanan, chartAkumulasi,
     mingguIni, formatPeriode,
   } = props;

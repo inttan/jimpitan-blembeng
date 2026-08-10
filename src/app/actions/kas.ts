@@ -2,11 +2,13 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { catatRiwayat } from "@/lib/riwayat";
 
 export interface TarikKasFormData {
   jumlah: number;
   keterangan: string;
   disetujui_oleh: string;
+  nama_penarik?: string;
   tanggal?: string;
 }
 
@@ -52,16 +54,26 @@ export async function tarikKasKegiatan(formData: TarikKasFormData) {
       tanggal,
       jenis: "keluar",
       jumlah: formData.jumlah,
-      keterangan,
+      keterangan: keterangan,
+      nama_penarik: formData.nama_penarik?.trim() || null,
       disetujui_oleh: formData.disetujui_oleh.trim(),
       transaksi_ref: null,
     })
-    .select("id, jumlah, keterangan, disetujui_oleh, tanggal")
+    .select("id, jumlah, keterangan, nama_penarik, disetujui_oleh, tanggal")
     .single();
 
   if (error || !row) {
     return { success: false, error: "Gagal mencatat: " + (error?.message ?? "") };
   }
+
+  // Catat ke riwayat transparansi
+  await catatRiwayat({
+    tabel: "kas_kegiatan",
+    record_id: row.id,
+    aksi: "insert",
+    data_lama: null,
+    data_baru: row,
+  });
 
   const { data: saldoBaru } = await supabase
     .from("v_saldo_kas")

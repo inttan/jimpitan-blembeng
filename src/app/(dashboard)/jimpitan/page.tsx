@@ -9,7 +9,6 @@ async function getDashboardData() {
 
     const [
       saldoRes,
-      upahRes,
       wargaRes,
       txMingguRes,
       txTerbaruRes,
@@ -17,7 +16,6 @@ async function getDashboardData() {
       kasPrevRes,
     ] = await Promise.all([
       supabase.from("v_saldo_kas").select("saldo_kas_kegiatan").maybeSingle(),
-      supabase.from("v_upah_belum_dibayar").select("total_belum_dibayar"),
       supabase.from("warga").select("id, nama, no_hp, no_rumah, status_aktif"),
       supabase
         .from("jimpitan_transaksi")
@@ -39,11 +37,6 @@ async function getDashboardData() {
     const wargaList = wargaRes.data ?? [];
     const wargaAktif = wargaList.filter((w) => w.status_aktif).length;
     const totalWarga = wargaList.length;
-
-    const totalUpahBelum = (upahRes.data ?? []).reduce(
-      (s, r) => s + Number(r.total_belum_dibayar ?? 0),
-      0
-    );
 
     const txMinggu = txMingguRes.data ?? [];
     const lunasMingguIni = txMinggu.filter((t) => t.status === "lunas").length;
@@ -103,7 +96,6 @@ async function getDashboardData() {
       saldoKas: Number(saldoRes.data?.saldo_kas_kegiatan ?? 0),
       saldoKasPrev,
       belumSetor,
-      totalUpahBelum,
       wargaAktif,
       totalWarga,
       lunasMingguIni,
@@ -111,8 +103,6 @@ async function getDashboardData() {
       transaksiTerbaru: (txTerbaruRes.data ?? []).map((t: any) => ({
         id: t.id,
         status: t.status,
-        potongan_kas: Number(t.potongan_kas ?? 0),
-        dana_kegiatan: Number(t.dana_kegiatan ?? 0),
         minggu_ke: t.minggu_ke,
         warga: t.warga,
         jumlah_setor: Number(t.jumlah_setor ?? 0),
@@ -127,7 +117,6 @@ async function getDashboardData() {
     return {
       saldoKas: 0, saldoKasPrev: 0,
       belumSetor: [],
-      totalUpahBelum: 0,
       wargaAktif: 0, totalWarga: 0,
       lunasMingguIni: 0, totalSetorMingguIni: 0,
       transaksiTerbaru: [], chartBulanan: [], chartAkumulasi: [],

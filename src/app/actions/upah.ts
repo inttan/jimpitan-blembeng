@@ -34,6 +34,15 @@ export async function tandaiUpahDibayar(id: string, tanggal_dibayar?: string) {
     return { success: false, error: "Gagal update: " + (error?.message ?? "") };
   }
 
+  // Catat ke riwayat transparansi
+  await catatRiwayat({
+    tabel: "upah_penarik",
+    record_id: id,
+    aksi: "update",
+    data_lama: { status: lama.status },
+    data_baru: { status: "sudah_dibayar", tanggal_dibayar: tgl },
+  });
+
   revalidatePath("/kas");
   revalidatePath("/");
   return { success: true };

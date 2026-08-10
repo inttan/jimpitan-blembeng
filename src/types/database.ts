@@ -58,8 +58,6 @@ export type Database = {
           minggu_ke: string;
           jumlah_setor: number;
           status: StatusJimpitan;
-          potongan_kas: number;
-          dana_kegiatan: number;
           dicatat_oleh: string | null;
           created_at: string;
         };
@@ -82,6 +80,7 @@ export type Database = {
           jenis: JenisKas;
           jumlah: number;
           keterangan: string;
+          nama_penarik: string | null;
           disetujui_oleh: string | null;
           transaksi_ref: string | null;
           created_at: string;
@@ -92,6 +91,7 @@ export type Database = {
           jenis: JenisKas;
           jumlah: number;
           keterangan: string;
+          nama_penarik?: string | null;
           disetujui_oleh?: string | null;
           transaksi_ref?: string | null;
           created_at?: string;

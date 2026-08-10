@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { catatRiwayat } from "@/lib/riwayat";
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     const tanggal = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
 
     // Catat sebagai kas keluar
-    const { error } = await supabase
+    const { data: row, error } = await supabase
       .from("kas_kegiatan")
       .insert({
         tanggal,
@@ -39,11 +40,22 @@ export async function POST(req: NextRequest) {
         jumlah,
         keterangan: keterangan || "Penarikan upah penarik",
         disetujui_oleh: "Admin",
-      });
+      })
+      .select("id, jumlah, keterangan, disetujui_oleh, tanggal")
+      .single();
 
-    if (error) {
+    if (error || !row) {
       return NextResponse.json({ error: "Gagal mencatat: " + error.message }, { status: 500 });
     }
+
+    // Catat ke riwayat transparansi
+    await catatRiwayat({
+      tabel: "kas_kegiatan",
+      record_id: row.id,
+      aksi: "insert",
+      data_lama: null,
+      data_baru: row,
+    });
 
     revalidatePath("/kas");
     revalidatePath("/");

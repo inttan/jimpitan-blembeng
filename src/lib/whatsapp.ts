@@ -1,5 +1,5 @@
 import { formatRupiah } from "@/lib/utils";
-import { APP_NAME, formatPeriodeMinggu, hitungAlokasi, labelStatus } from "@/lib/jimpitan";
+import { APP_NAME, formatPeriodeMinggu, labelStatus } from "@/lib/jimpitan";
 import type { StatusJimpitan } from "@/lib/jimpitan";
 
 function normalisasiNoHp(no: string): string {
@@ -15,8 +15,6 @@ export interface JimpitanNotifPayload {
   mingguKe: string;
   jumlahSetor: number;
   status: StatusJimpitan;
-  potonganKas?: number;
-  danaKegiatan?: number;
 }
 
 export interface ReminderNotifPayload {

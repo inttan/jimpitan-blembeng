@@ -133,8 +133,6 @@ export default function FormJimpitan({
         jumlah_setor: totalNominal,
         status,
         jumlah_minggu: jumlahMinggu,
-        potongan_kas: lastSuccessData?.potongan_kas,
-        dana_kegiatan: lastSuccessData?.dana_kegiatan,
         minggu_ke: lastSuccessData?.minggu_ke,
       });
       setWargaId("");
@@ -153,8 +151,6 @@ export default function FormJimpitan({
       mingguKe: successResult.minggu_ke,
       jumlahSetor: successResult.jumlah_setor,
       status: successResult.status,
-      potonganKas: successResult.potongan_kas,
-      danaKegiatan: successResult.dana_kegiatan,
     });
     kirimNotifWA(url);
   }

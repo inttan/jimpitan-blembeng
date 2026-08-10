@@ -23,16 +23,15 @@ create table penarik (
 );
 
 -- 3. Transaksi jimpitan mingguan
+-- Catatan: SEMUA setoran lunas masuk kas 100% (tanpa potongan)
+-- Upah penarik diambil bebas dari kas oleh pengurus (bukan di-potongan otomatis)
 create table jimpitan_transaksi (
   id uuid primary key default gen_random_uuid(),
   warga_id uuid references warga(id) not null,
   penarik_id uuid references penarik(id),        -- siapa yang narik minggu itu
   minggu_ke date not null,                        -- tanggal awal minggu (misal tiap Senin)
-  jumlah_setor numeric(10,2) not null default 3500,
+  jumlah_setor numeric(10,2) not null default 5000,
   status text not null default 'lunas' check (status in ('lunas','belum','nihil')),
-  -- kolom generated otomatis, jadi nggak perlu hitung manual di aplikasi
-  potongan_kas numeric(10,2) generated always as (jumlah_setor * 0.05) stored,
-  dana_kegiatan numeric(10,2) generated always as (jumlah_setor * 0.95) stored,
   dicatat_oleh text,
   created_at timestamptz default now()
 );
@@ -44,6 +43,7 @@ create table kas_kegiatan (
   jenis text not null check (jenis in ('masuk','keluar')),
   jumlah numeric(10,2) not null,
   keterangan text not null,          -- wajib diisi, misal "Acara 17 Agustus"
+  nama_penarik text,                -- nama penarik (untuk penarikan upah)
   disetujui_oleh text,               -- nama kadus/pengurus yang approve
   transaksi_ref uuid references jimpitan_transaksi(id), -- null kalau pengeluaran manual
   created_at timestamptz default now()
@@ -101,14 +101,14 @@ where status = 'belum_dibayar'
 group by penarik_id;
 
 -- =========================================================
--- Trigger: otomatis masuk ke kas_kegiatan tiap ada transaksi jimpitan lunas
+-- Trigger: otomatis masuk ke kas_kegiatan tiap ada transaksi jimpitan lunas (100%)
 -- =========================================================
 create or replace function fn_auto_kas_masuk()
 returns trigger as $$
 begin
   if new.status = 'lunas' then
     insert into kas_kegiatan (tanggal, jenis, jumlah, keterangan, transaksi_ref)
-    values (new.minggu_ke, 'masuk', new.dana_kegiatan, 'Setoran jimpitan mingguan', new.id);
+    values (new.minggu_ke, 'masuk', new.jumlah_setor, 'Setoran jimpitan mingguan', new.id);
   end if;
   return new;
 end;

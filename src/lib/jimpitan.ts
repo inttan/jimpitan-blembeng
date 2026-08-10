@@ -6,29 +6,7 @@ export const DUSUN_NAME = "Blembeng";
 /** Nominal standar jimpitan per KK per minggu (Rp) */
 export const NOMINAL_STANDAR = 5000;
 
-/** Upah per penarik per minggu (Rp) - total 2 penarik = 50.000 */
-export const UPAH_PER_PENARIK_PER_MINGGU = 25000;
-export const UPAH_TOTAL_2_PENARIK = 50000; // 2 penarik × 25.000
-
-/** 95% masuk kas kegiatan desa */
-export const PERSENTASE_KAS = 0.95;
-
 export type StatusJimpitan = "lunas" | "belum" | "nihil";
-
-/** Hitung potongan & dana kegiatan (mirror generated columns di DB) */
-export function hitungAlokasi(jumlahSetor: number) {
-  const dana_kegiatan = Math.round(jumlahSetor * PERSENTASE_KAS * 100) / 100;
-  // Potongan dari upah penarik (fixed Rp 50.000/minggu/orang)
-  const { per_orang } = hitungUpahPenarik(1);
-  const potongan_kas = per_orang;
-  return { potongan_kas, dana_kegiatan };
-}
-
-/** Hitung total upah penarik per minggu berdasarkan jumlah penarik */
-export function hitungUpahPenarik(jumlahPenarik: number = 1) {
-  const total_upah = UPAH_PER_PENARIK_PER_MINGGU * jumlahPenarik;
-  return { total_upah, per_orang: UPAH_PER_PENARIK_PER_MINGGU };
-}
 
 /**
  * Awal minggu (Senin) dalam timezone lokal — cocok dengan
