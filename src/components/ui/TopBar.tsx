@@ -1,9 +1,8 @@
 "use client";
-import Link from "next/link";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { useLang } from "@/components/providers/LangProvider";
 import { useTransition } from "react";
-import { Sun, Moon, LogOut, Home } from "lucide-react";
+import { Sun, Moon, LogOut } from "lucide-react";
 import { logout } from "@/app/actions/auth";
 
 export default function TopBar() {
@@ -86,28 +85,6 @@ export default function TopBar() {
             : <Moon size={14} strokeWidth={2} />}
         </button>
 
-        {/* Kembali ke Website */}
-        <Link
-          href="/"
-          title="Website"
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "8px",
-            border: "1px solid var(--line)",
-            background: "var(--surf2)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: "pointer",
-            transition: "all 0.15s",
-            color: "var(--green)",
-            textDecoration: "none",
-          }}
-        >
-          <Home size={14} strokeWidth={2} />
-        </Link>
-
         {/* Logout */}
         <button
           onClick={() => startTransition(() => logout())}
@@ -124,7 +101,7 @@ export default function TopBar() {
             justifyContent: "center",
             cursor: isPending ? "wait" : "pointer",
             transition: "all 0.15s",
-            color: isPending ? "var(--brass)" : "var(--ink-soft)",
+            color: "var(--terracotta)",
             opacity: isPending ? 0.7 : 1,
           }}
         >
