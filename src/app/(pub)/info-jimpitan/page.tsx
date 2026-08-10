@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getMingguKe } from "@/lib/jimpitan";
 
 export const metadata = {
-  title: "Jimpitan Mingguan — Daven Blembeng",
-  description: "Program iuran wajib mingguan untuk kas kegiatan dusun dan operasional Karang Taruna Daven Blembeng",
+  title: "Jimpitan Mingguan — Dusun Blembeng",
+  description: "Program iuran wajib mingguan untuk kas kegiatan dusun dan operasional Karang Taruna Dusun Blembeng",
 };
 
 function formatRupiah(num: number) {
@@ -94,7 +94,7 @@ export default async function InfoJimpitanPage() {
             <span className="text-sm font-medium">Program Jimpitan Mingguan</span>
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" style={{ color: "var(--paper)", fontFamily: "var(--font-fraunces)" }}>
-            Jimpitan Daven Blembeng
+            Jimpitan Dusun Blembeng
           </h1>
           <p className="text-lg md:text-xl max-w-2xl mx-auto" style={{ color: "rgba(246,243,234,0.85)" }}>
             Transparansi dan akuntabilitas kas kegiatan untuk kesejahteraan bersama
@@ -270,7 +270,7 @@ export default async function InfoJimpitanPage() {
       {/* Footer */}
       <footer className="py-8 text-center" style={{ borderTop: "1px solid var(--bdr)" }}>
         <p className="text-sm" style={{ color: "var(--text2)" }}>
-          Daven Blembeng, Desa Purwodadi, Kecamatan Tegalrejo
+          Dusun Blembeng, Desa Purwodadi, Kecamatan Tegalrejo
         </p>
       </footer>
     </div>
