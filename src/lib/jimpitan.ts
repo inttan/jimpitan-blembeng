@@ -9,13 +9,14 @@ export const NOMINAL_STANDAR = 5000;
 export type StatusJimpitan = "lunas" | "belum" | "nihil";
 
 /**
- * Awal minggu (Senin) dalam timezone lokal — cocok dengan
- * Postgres date_trunc('week', ...) yang memakai ISO week (Senin).
+ * Tanggal Senin yang menandai awal minggu tersebut.
+ * Week cycle tetep Senin-Minggu.
+ * Jimpitan dilakukan di "malam Sabtu", tapi minggu_ke tetap berdasarkan input date.
  */
 export function getMingguKe(date: Date = new Date()): string {
   const d = new Date(date);
   d.setHours(0, 0, 0, 0);
-  const day = d.getDay(); // 0=Min … 6=Sab
+  const day = d.getDay(); // 0=Min, 1=Sen, ..., 6=Sab
   const diffToMonday = day === 0 ? -6 : 1 - day;
   d.setDate(d.getDate() + diffToMonday);
   return toDateString(d);
@@ -24,7 +25,7 @@ export function getMingguKe(date: Date = new Date()): string {
 /** Akhir minggu (Minggu) dari tanggal Senin minggu_ke */
 export function getAkhirMinggu(mingguKe: string): string {
   const d = new Date(mingguKe + "T00:00:00");
-  d.setDate(d.getDate() + 6);
+  d.setDate(d.getDate() + 6); // Senin + 6 = Minggu
   return toDateString(d);
 }
 
