@@ -50,6 +50,26 @@ const strukturKarangTaruna = {
         { nama: "Febrian Tri Aditya", jabatan: "Anggota" },
       ],
     },
+    {
+      divisi: "Divisi NYINOM",
+      color: "var(--red)",
+      gridCols: "md:grid-cols-3",
+      anggota: [
+        { nama: "Ahmad Shofa Fuad", jabatan: "Koordinator" },
+        { nama: "Abi Kristanto", jabatan: "Anggota" },
+        { nama: "Febrian Tri Aditya", jabatan: "Anggota" },
+      ],
+    },
+    {
+      divisi: "Divisi Pengelolaan Gudang",
+      color: "var(--p3)",
+      gridCols: "md:grid-cols-3",
+      anggota: [
+        { nama: "Rizki Ramadhan", jabatan: "Koordinator" },
+        { nama: "Deni Afriyanto", jabatan: "Anggota" },
+        { nama: "Bagas Setyawan", jabatan: "Anggota" },
+      ],
+    },
   ],
 };
 
@@ -386,9 +406,8 @@ export default function StrukturPage() {
                     <p className="text-sm" style={{ color: "var(--text2)" }}>
                       Karang Taruna merupakan organisasi kemasyarakatan yang bergerak di bidang
                       pengembangan generasi muda. Di Dusun Blembeng, Karang Taruna dipimpin oleh
-                      seorang Pembina dan pengurus inti, dengan Divisi HUMAS yang menjembatani
-                      komunikasi dengan warga dan Divisi MEDIA yang mengelola dokumentasi serta
-                      publikasi kegiatan dusun.
+                      seorang Pembina dan pengurus inti, dengan Divisi HUMAS, Divisi MEDIA,
+                      Divisi NYINOM, dan Divisi Pengelolaan Gudang.
                     </p>
                   </div>
                 </div>
