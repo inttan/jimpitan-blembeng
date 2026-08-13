@@ -234,15 +234,27 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
               </ul>
             </div>
 
-            {/* Contact */}
+            {/* Contact / Social Media */}
             <div>
               <h4 className="font-semibold mb-4" style={{ color: "var(--ink)" }}>
                 Kontak
               </h4>
-              <div className="space-y-3 text-sm" style={{ color: "var(--text2)" }}>
-                <p>Dusun Blembeng</p>
-                <p>Desa Purwodadi, Kec. Tegalrejo</p>
-                <p>Kabupaten Magelang, Jawa Tengah</p>
+              <div className="space-y-3">
+                {/* Instagram KKN */}
+                <a href="https://www.instagram.com/kknppmt_desapurwodadi" target="_blank" rel="noopener noreferrer" aria-label="Kunjungi Instagram KKN PPMT Desa Purwodadi" className="flex items-center gap-2 text-sm transition-colors" style={{ color: "var(--text2)" }} onMouseEnter={(e) => { e.currentTarget.style.color = "var(--green)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; }}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
+                  <span>@kknppmt_desapurwodadi</span>
+                </a>
+                {/* Instagram Karang Taruna */}
+                <a href="https://www.instagram.com/karangtarunablembengofficial" target="_blank" rel="noopener noreferrer" aria-label="Kunjungi Instagram Karang Taruna Blembeng" className="flex items-center gap-2 text-sm transition-colors" style={{ color: "var(--text2)" }} onMouseEnter={(e) => { e.currentTarget.style.color = "var(--green)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; }}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" /><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" /></svg>
+                  <span>@karangtarunablembengofficial</span>
+                </a>
+                {/* TikTok */}
+                <a href="https://www.tiktok.com/@generasiremajablembeng" target="_blank" rel="noopener noreferrer" aria-label="Kunjungi TikTok Generasi Remaja Blembeng" className="flex items-center gap-2 text-sm transition-colors" style={{ color: "var(--text2)" }} onMouseEnter={(e) => { e.currentTarget.style.color = "var(--green)"; }} onMouseLeave={(e) => { e.currentTarget.style.color = "var(--text2)"; }}>
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1 .05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" /></svg>
+                  <span>@generasiremajablembeng</span>
+                </a>
               </div>
             </div>
           </div>
