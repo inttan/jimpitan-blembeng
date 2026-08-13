@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Profil — Dusun Blembeng",
+  title: "Profil —Dusun Blembeng",
   description: "Profil dan informasi tentang Dusun Blembeng",
 };
 
@@ -12,17 +12,15 @@ export default function ProfilPage() {
     kecamatan: "Tegalrejo",
     kabupaten: "Magelang",
     provinsi: "Jawa Tengah",
-    jumlahKK: 87,
-    jumlahWarga: 312,
-    tahunBerdiri: 1985,
-    latitude: -7.0833,
-    longitude: 110.2500,
+    jumlahKK: 94,
+    jumlahWarga: 266,
+    jumlahDusun: 3,
   };
 
   const potensi = [
     {
-      title: "Pertanian Padi",
-      desc: "Lahan pertanian produktif yang menjadi sumber ekonomi utama warga",
+      title: "Pertanian",
+      desc: "Lahan pertanian menjadi sumber ekonomi utama warga Dusun Blembeng.",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 22V12" /><path d="M12 12C12 12 8 8 8 5C8 5 10 3 12 3C14 3 16 5 16 5C16 8 12 12 12 12Z" />
@@ -31,21 +29,21 @@ export default function ProfilPage() {
       ),
     },
     {
-      title: "Kerajinan Tangan",
-      desc: "Beberapa warga memiliki keahlian dalam membuat anyaman dan kerajinan tradisional",
+      title: "UMKM",
+      desc: "Berbagai usaha mikro, kecil, dan menengah yang dikelola warga sebagai penopang ekonomi tambahan.",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2" /><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16" />
         </svg>
       ),
     },
     {
-      title: "Keharmonisan Sosial",
-      desc: "Semangat gotong royong dan musyawarah yang masih kuat di masyarakat",
+      title: "Pondok Pesantren & Makam Religi",
+      desc: "Keberadaan pondok pesantren dan makam yang menjadi tempat ziarah religi, menjadikan Blembeng juga dikenal sebagai kawasan wisata religi.",
       icon: (
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+          <path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" />
+          <circle cx="12" cy="12" r="3" />
         </svg>
       ),
     },
@@ -77,8 +75,8 @@ export default function ProfilPage() {
                   <div className="text-xs" style={{ color: "var(--text2)" }}>Jiwa</div>
                 </div>
                 <div className="p-4 rounded-xl text-center" style={{ background: "var(--surf)" }}>
-                  <div className="text-2xl font-bold" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>{profilData.tahunBerdiri}</div>
-                  <div className="text-xs" style={{ color: "var(--text2)" }}>Tahun Berdiri</div>
+                  <div className="text-2xl font-bold" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>{profilData.jumlahDusun}</div>
+                  <div className="text-xs" style={{ color: "var(--text2)" }}>Bagian dari Desa Purwodadi</div>
                 </div>
               </div>
             </div>
@@ -112,15 +110,13 @@ export default function ProfilPage() {
               </div>
               <div className="p-6 rounded-2xl" style={{ background: "var(--surf)", border: "1px solid var(--bdr)" }}>
                 <p className="leading-relaxed" style={{ color: "var(--text2)" }}>
-                  Dusun Blembeng merupakan salah satu dusun yang berada di bawah naungan Desa Purwodadi,
-                  Kecamatan Tegalrejo, Kabupaten Magelang. Didirikan pada tahun {profilData.tahunBerdiri},
-                  dusun ini telah mengalami pertumbuhan yang signifikan dengan {profilData.jumlahKK} kepala
-                  keluarga dan {profilData.jumlahWarga} jiwa.
+                  <strong>Sejarah &amp; Asal-Usul.</strong> Dusun Blembeng merupakan salah satu dari tiga dusun yang digabungkan menjadi Desa Purwodadi. Penggabungan ini dilakukan pada masa kolonial Belanda oleh pihak yang disebut warga sebagai &quot;seten&quot;, hingga akhirnya membentuk kesatuan wilayah Desa Purwodadi seperti sekarang. Saat ini{' '}
+                  <strong>Dusun Blembeng</strong> memiliki {profilData.jumlahKK} Kepala Keluarga dengan total {profilData.jumlahWarga} jiwa.
                 </p>
                 <p className="leading-relaxed mt-4" style={{ color: "var(--text2)" }}>
-                  Kehidupan bermasyarakat di Dusun Blembeng menjunjung tinggi gotong royong dan musyawarah.
-                  Berbagai tradisi seperti jimpitan mingguan, rapat bulanan, dan kegiatan peringatan kemerdekaan
-                  Indonesia menjadi bukti nyata kebersamaan warga.
+                  <strong>Tradisi &amp; Adat Istiadat.</strong> Kehidupan bermasyarakat di{' '}
+                  <strong>Dusun Blembeng</strong> menjunjung tinggi gotong royong dan musyawarah, tercermin dari tradisi adat istiadat yang masih dilestarikan seperti{' '}
+                  <strong>Nyadran</strong>, <strong>Muludan (Maulidan)</strong>, dan <strong>Syawalan</strong>.
                 </p>
               </div>
             </div>
@@ -131,7 +127,7 @@ export default function ProfilPage() {
                     <polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 17 12 22 22 17" /><polyline points="2 12 12 17 22 12" />
                   </svg>
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>Potensi & Kearifan Lokal</h2>
+                <h2 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}>Potensi &amp; Kearifan Lokal</h2>
               </div>
               <div className="space-y-4">
                 {potensi.map((item, index) => (
@@ -160,8 +156,13 @@ export default function ProfilPage() {
           </div>
           <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--bdr)", boxShadow: "var(--shd2)" }}>
             <div className="aspect-[16/9] md:aspect-[21/9]">
+              {/*
+               * TODO: Ganti query URL ini dengan link Google Maps hasil pin manual
+               * dari lokasi pasti (misal balai dusun/masjid) untuk akurasi maksimal.
+               * Lihat instruksi di README atau tanya pengelola web.
+               */}
               <iframe
-                src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3966.5!2d${profilData.longitude}!3d${profilData.latitude}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNsKwNTMnMDAuMyJTIDEwOcKwMjUnMDQuNiJF!5e0!3m2!1sen!2sid!4v1234567890`}
+                src="https://www.google.com/maps?q=Dusun+Blembeng,+Purwodadi,+Tegalrejo,+Magelang&output=embed"
                 width="100%" height="100%" style={{ border: 0 }} allowFullScreen loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade" title="Lokasi Dusun Blembeng"
               />
