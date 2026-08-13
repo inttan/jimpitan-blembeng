@@ -157,7 +157,7 @@ export default function GudangPage() {
                 Penanggung Jawab Gudang
               </p>
               <a
-                href="https://wa.me/6281234567890?text=Hubungi%20mengenai%20peminjaman%20perlengkapan%20Dusun%20Blembeng"
+                href="https://wa.me/6282226373366?text=Hubungi%20mengenai%20peminjaman%20perlengkapan%20Dusun%20Blembeng"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 rounded-xl font-medium transition-all duration-200"
