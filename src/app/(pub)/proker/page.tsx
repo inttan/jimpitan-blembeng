@@ -240,10 +240,6 @@ export default function ProkerPage() {
   const hasBadge = "badge" in currentProker && currentProker.badge !== undefined;
   const badgeText = hasBadge ? (currentProker as { badge: string }).badge : undefined;
 
-  // Helper untuk cek tipe (discriminated union narrowing)
-  const isTahunan = currentProker.type === "tahunan";
-  const isRutin = currentProker.type === "rutin";
-
   return (
     <div>
       {/* Hero */}
@@ -346,7 +342,7 @@ export default function ProkerPage() {
                   {currentProker.desc}
                 </p>
 
-                {isTahunan && (
+                {currentProker.type === "tahunan" && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div
@@ -368,7 +364,7 @@ export default function ProkerPage() {
 
                 <div className="mt-8 pt-6 border-t" style={{ borderColor: "var(--bdr)" }}>
                   <p className="text-xs" style={{ color: "var(--text3)" }}>
-                    {isRutin
+                    {currentProker.type === "rutin"
                       ? "Jadwal kegiatan rutin mingguan"
                       : `Roadmap kegiatan sepanjang tahun ${currentYear}`}
                   </p>
@@ -386,11 +382,10 @@ export default function ProkerPage() {
                   className="text-xl font-bold mb-6 flex items-center gap-3"
                   style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}
                 >
-                  {isRutin ? "Jadwal Mingguan" : `Jadwal Kegiatan ${currentYear}`}
+                  {currentProker.type === "rutin" ? "Jadwal Mingguan" : `Jadwal Kegiatan ${currentYear}`}
                 </h3>
 
-                {/* Render berdasarkan tipe - TypeScript narrowing works here */}
-                {isRutin ? (
+                {currentProker.type === "rutin" ? (
                   /* ProkerRutin: render jadwal rutin */
                   <div className="space-y-3">
                     {(currentProker as ProkerRutin).jadwal.map((item, index) => (
