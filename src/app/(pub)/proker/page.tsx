@@ -8,11 +8,43 @@ import { useState } from "react";
  * TODO #2: Pertimbangkan memindahkan ke file data terpisah (json/ts) agar mudah diupdate.
  */
 
-const programKerja = [
+// ============================================================================
+// TYPE DEFINITIONS - Discriminated Union
+// ============================================================================
+
+type TimelineItem = { bulan: string; kegiatan: string };
+type JadwalRutinItem = { hari: string; kegiatan: string };
+
+interface ProkerBase {
+  id: string;
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+  color: string;
+  badge?: string;
+}
+
+interface ProkerTahunan extends ProkerBase {
+  type: "tahunan";
+  timeline: TimelineItem[];
+}
+
+interface ProkerRutin extends ProkerBase {
+  type: "rutin";
+  jadwal: JadwalRutinItem[];
+}
+
+type Proker = ProkerTahunan | ProkerRutin;
+
+// ============================================================================
+// DATA
+// ============================================================================
+
+const programKerja: Proker[] = [
   {
     id: "jimpitan",
-    type: "tahunan", // "tahunan" | "rutin"
-    title: "Jimpitan & Kas Dusun",
+    type: "tahunan",
+    title: "Jimpitan & Kas Dumont",
     desc: "Iuran wajib mingguan warga untuk kas kegiatan dusun",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -21,20 +53,20 @@ const programKerja = [
       </svg>
     ),
     color: "#1F3D2B",
-    // TODO: Konfirmasi bulan pasti Musyawarah Dusun dengan pengurus
+    // TODO: Konfirmasi bulan pasti Musyawarah Dumont dengan pengurus
     timeline: [
       { bulan: "Januari", kegiatan: "Evaluasi kas & rencana tahunan" },
       { bulan: "Februari", kegiatan: "Kumpulan Jimpitan & Karang Taruna (evaluasi 2 bulanan)" },
-      { bulan: "Maret", kegiatan: "Musyawarah Dusun — laporan jimpitan triwulan" },
+      { bulan: "Maret", kegiatan: "Musyawarah Dumont — laporan jimpitan triwulan" },
       { bulan: "April", kegiatan: "Kumpulan Jimpitan & Karang Taruna" },
       { bulan: "Mei", kegiatan: "Kegiatan rutin berjalan seperti biasa" },
-      { bulan: "Juni", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dusun triwulan" },
+      { bulan: "Juni", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dumont triwulan" },
       { bulan: "Juli", kegiatan: "Kegiatan rutin berjalan seperti biasa" },
       { bulan: "Agustus", kegiatan: "Kumpulan Jimpitan & Karang Taruna, persiapan Agustusan" },
-      { bulan: "September", kegiatan: "Musyawarah Dusun — laporan jimpitan triwulan" },
+      { bulan: "September", kegiatan: "Musyawarah Dumont — laporan jimpitan triwulan" },
       { bulan: "Oktober", kegiatan: "Kumpulan Jimpitan & Karang Taruna" },
       { bulan: "November", kegiatan: "Persiapan akhir tahun" },
-      { bulan: "Desember", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dusun & laporan akhir tahun" },
+      { bulan: "Desember", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dumont & laporan akhir tahun" },
     ],
   },
   {
@@ -136,6 +168,10 @@ const programKerja = [
   },
 ];
 
+// ============================================================================
+// COMPONENTS
+// ============================================================================
+
 function TimelineItem({ bulan, kegiatan, isHighlight, color }: { bulan: string; kegiatan: string; isHighlight: boolean; color: string }) {
   return (
     <div className="flex items-start gap-4">
@@ -188,13 +224,25 @@ function RecurringItem({ hari, kegiatan, color }: { hari: string; kegiatan: stri
   );
 }
 
+// ============================================================================
+// MAIN PAGE COMPONENT
+// ============================================================================
+
 export default function ProkerPage() {
   const [activeProker, setActiveProker] = useState(programKerja[0].id);
   const currentProker = programKerja.find((p) => p.id === activeProker) || programKerja[0];
   const currentYear = new Date().getFullYear();
 
-  // Tentukan isHighlight: highlight SEMUA bulan yang berisi "Musyawarah Dusun"
+  // Tentukan isHighlight: highlight SEMUA bulan yang berisi "Musyawarah Dumont"
   const isMusyawarah = (kegiatan: string) => kegiatan.toLowerCase().includes("musyawarah");
+
+  // Helper untuk render badge (hanya untuk proker yang punya badge)
+  const hasBadge = "badge" in currentProker && currentProker.badge !== undefined;
+  const badgeText = hasBadge ? (currentProker as { badge: string }).badge : undefined;
+
+  // Helper untuk cek tipe (discriminated union narrowing)
+  const isTahunan = currentProker.type === "tahunan";
+  const isRutin = currentProker.type === "rutin";
 
   return (
     <div>
@@ -211,7 +259,7 @@ export default function ProkerPage() {
             Program <span style={{ color: "var(--green)" }}>Kerja</span>
           </h1>
           <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text2)" }}>
-            Rencana dan jadwal kegiatan Dusun Blembeng untuk satu tahun penuh
+            Rencana dan jadwal kegiatan Dumont Blembeng untuk satu tahun penuh
           </p>
         </div>
       </section>
@@ -233,7 +281,7 @@ export default function ProkerPage() {
                 }}
               >
                 {/* Badge untuk program rencana */}
-                {proker.badge && (
+                {"badge" in proker && proker.badge && (
                   <span
                     className="absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium"
                     style={{
@@ -275,12 +323,12 @@ export default function ProkerPage() {
                 style={{ background: "var(--surf)", border: "1px solid var(--bdr)", boxShadow: "var(--shd-card)" }}
               >
                 {/* Badge untuk program rencana */}
-                {currentProker.badge && (
+                {badgeText && (
                   <span
                     className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-3"
                     style={{ background: "var(--acc2)", color: "var(--brass)" }}
                   >
-                    {currentProker.badge}
+                    {badgeText}
                   </span>
                 )}
                 <div
@@ -298,7 +346,7 @@ export default function ProkerPage() {
                   {currentProker.desc}
                 </p>
 
-                {currentProker.type === "tahunan" && (
+                {isTahunan && (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div
@@ -320,7 +368,7 @@ export default function ProkerPage() {
 
                 <div className="mt-8 pt-6 border-t" style={{ borderColor: "var(--bdr)" }}>
                   <p className="text-xs" style={{ color: "var(--text3)" }}>
-                    {currentProker.type === "rutin"
+                    {isRutin
                       ? "Jadwal kegiatan rutin mingguan"
                       : `Roadmap kegiatan sepanjang tahun ${currentYear}`}
                   </p>
@@ -338,15 +386,14 @@ export default function ProkerPage() {
                   className="text-xl font-bold mb-6 flex items-center gap-3"
                   style={{ color: "var(--ink)", fontFamily: "var(--font-fraunces)" }}
                 >
-                  {currentProker.type === "rutin"
-                    ? "Jadwal Mingguan"
-                    : `Jadwal Kegiatan ${currentYear}`}
+                  {isRutin ? "Jadwal Mingguan" : `Jadwal Kegiatan ${currentYear}`}
                 </h3>
 
-                {currentProker.type === "rutin" ? (
-                  /* Render untuk program rutin mingguan */
+                {/* Render berdasarkan tipe - TypeScript narrowing works here */}
+                {isRutin ? (
+                  /* ProkerRutin: render jadwal rutin */
                   <div className="space-y-3">
-                    {currentProker.jadwal?.map((item, index) => (
+                    {(currentProker as ProkerRutin).jadwal.map((item, index) => (
                       <RecurringItem
                         key={index}
                         hari={item.hari}
@@ -356,9 +403,9 @@ export default function ProkerPage() {
                     ))}
                   </div>
                 ) : (
-                  /* Render untuk program tahunan */
+                  /* ProkerTahunan: render timeline bulanan */
                   <div className="relative">
-                    {currentProker.timeline.map((item, index) => {
+                    {(currentProker as ProkerTahunan).timeline.map((item, index) => {
                       const highlight = isMusyawarah(item.kegiatan);
                       return (
                         <TimelineItem
