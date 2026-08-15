@@ -44,7 +44,7 @@ const programKerja: Proker[] = [
   {
     id: "jimpitan",
     type: "tahunan",
-    title: "Jimpitan & Kas Dumont",
+    title: "Jimpitan & Kas Dusun",
     desc: "Iuran wajib mingguan warga untuk kas kegiatan dusun",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -53,20 +53,20 @@ const programKerja: Proker[] = [
       </svg>
     ),
     color: "#1F3D2B",
-    // TODO: Konfirmasi bulan pasti Musyawarah Dumont dengan pengurus
+    // TODO: Konfirmasi bulan pasti Musyawarah Dusun dengan pengurus
     timeline: [
       { bulan: "Januari", kegiatan: "Evaluasi kas & rencana tahunan" },
       { bulan: "Februari", kegiatan: "Kumpulan Jimpitan & Karang Taruna (evaluasi 2 bulanan)" },
-      { bulan: "Maret", kegiatan: "Musyawarah Dumont — laporan jimpitan triwulan" },
+      { bulan: "Maret", kegiatan: "Musyawarah Dusun — laporan jimpitan triwulan" },
       { bulan: "April", kegiatan: "Kumpulan Jimpitan & Karang Taruna" },
       { bulan: "Mei", kegiatan: "Kegiatan rutin berjalan seperti biasa" },
-      { bulan: "Juni", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dumont triwulan" },
+      { bulan: "Juni", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dusun triwulan" },
       { bulan: "Juli", kegiatan: "Kegiatan rutin berjalan seperti biasa" },
       { bulan: "Agustus", kegiatan: "Kumpulan Jimpitan & Karang Taruna, persiapan Agustusan" },
-      { bulan: "September", kegiatan: "Musyawarah Dumont — laporan jimpitan triwulan" },
+      { bulan: "September", kegiatan: "Musyawarah Dusun — laporan jimpitan triwulan" },
       { bulan: "Oktober", kegiatan: "Kumpulan Jimpitan & Karang Taruna" },
       { bulan: "November", kegiatan: "Persiapan akhir tahun" },
-      { bulan: "Desember", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dumont & laporan akhir tahun" },
+      { bulan: "Desember", kegiatan: "Kumpulan Jimpitan & Karang Taruna + Musyawarah Dusun & laporan akhir tahun" },
     ],
   },
   {
@@ -232,7 +232,7 @@ export default function ProkerPage() {
   const currentProker = programKerja.find((p) => p.id === activeProker) || programKerja[0];
   const currentYear = new Date().getFullYear();
 
-  // Tentukan isHighlight: highlight SEMUA bulan yang berisi "Musyawarah Dumont"
+  // Tentukan isHighlight: highlight SEMUA bulan yang berisi "Musyawarah Dusun"
   const isMusyawarah = (kegiatan: string) => kegiatan.toLowerCase().includes("musyawarah");
 
   // Helper untuk render badge (hanya untuk proker yang punya badge)
@@ -254,7 +254,7 @@ export default function ProkerPage() {
             Program <span style={{ color: "var(--green)" }}>Kerja</span>
           </h1>
           <p className="text-lg max-w-2xl mx-auto" style={{ color: "var(--text2)" }}>
-            Rencana dan jadwal kegiatan Dumont Blembeng untuk satu tahun penuh
+            Rencana dan jadwal kegiatan Dusun Blembeng untuk satu tahun penuh
           </p>
         </div>
       </section>
