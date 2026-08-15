@@ -3,17 +3,16 @@
 import { useState } from "react";
 
 const strukturDusun = {
-  kepalaDusun: { nama: "Budi Santoso", jabatan: "Kepala Dusun", foto: null },
+  kepalaDusun: { nama: "Muhammad Afif", jabatan: "Kepala Dusun", foto: null },
   rtRw: [
-    { nama: "Wartono", jabatan: "RT 01", foto: null },
-    { nama: "Siti Aminah", jabatan: "RT 02", foto: null },
-    { nama: "Ahmad Dahlan", jabatan: "RT 03", foto: null },
-    { nama: "Dewi Lestari", jabatan: "RT 04", foto: null },
+    { nama: "Nur Rohman", jabatan: "Ketua RT 06", foto: null },
+    { nama: "Muhammad As Ad", jabatan: "Ketua RT 07", foto: null },
+    { nama: "Romadhon", jabatan: "Ketua RW", foto: null },
   ],
   tokohMasyarakat: [
-    { nama: "H. Abdul Rahman", jabatan: "Tokoh Agama", foto: null },
-    { nama: "Parno", jabatan: "Mantan Kepala Dusun", foto: null },
-    { nama: "Nengsih", jabatan: "Bidan Desa", foto: null },
+    { nama: "Pak Jafar Sidiq", jabatan: "Tokoh Masyarakat", foto: null },
+    { nama: "Pak Wahidun", jabatan: "Tokoh Masyarakat", foto: null },
+    { nama: "Pak Muhammad Kholil", jabatan: "Tokoh Masyarakat", foto: null },
   ],
 };
 
