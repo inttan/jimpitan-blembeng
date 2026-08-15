@@ -258,7 +258,7 @@ export default function StrukturPage() {
                 >
                   Perangkat Dusun
                 </h3>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 justify-center max-w-3xl mx-auto">
                   {strukturDusun.rtRw.map((rt, index) => (
                     <PersonCard key={index} {...rt} foto={null} size="sm" />
                   ))}
@@ -273,7 +273,7 @@ export default function StrukturPage() {
                 >
                   Tokoh Masyarakat
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 justify-center max-w-4xl mx-auto">
                   {strukturDusun.tokohMasyarakat.map((tokoh, index) => (
                     <div
                       key={index}
